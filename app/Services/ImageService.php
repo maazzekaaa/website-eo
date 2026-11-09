@@ -14,9 +14,18 @@ class ImageService
 
     private const THUMB_WIDTH = 480;
 
+    /** Batas piksel: gambar lebih besar menghabiskan memori PHP saat dibuka. */
+    private const MAX_PIXELS = 50_000_000;
+
     /** Simpan sebagai WebP plus thumbnail `{nama}_thumb.webp`, lalu kembalikan path-nya. */
     public function store(UploadedFile $file, string $dir, string $disk = 'public'): string
     {
+        [$width, $height] = @getimagesize($file->getRealPath()) ?: [0, 0];
+        if ($width * $height > self::MAX_PIXELS) {
+            throw ValidationException::withMessages(['image' => 'Resolusi gambar terlalu besar (maks. 50 megapiksel).']);
+        }
+
+        ini_set('memory_limit', '512M');
         $image = @imagecreatefromstring((string) file_get_contents($file->getRealPath()));
         if (! $image instanceof GdImage) {
             throw ValidationException::withMessages(['image' => 'Berkas gambar tidak dapat dibaca.']);

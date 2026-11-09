@@ -38,6 +38,16 @@ class ImageServiceTest extends TestCase
         $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
+    public function test_gambar_terlalu_besar_ditolak_sebelum_diolah(): void
+    {
+        Storage::fake('public');
+        // Header PNG yang mengaku berukuran 20000 x 20000 piksel.
+        $header = "\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR".pack('NN', 20000, 20000)."\x08\x06\x00\x00\x00\x00\x00\x00\x00";
+
+        $this->expectExceptionMessage('Resolusi gambar terlalu besar');
+        app(ImageService::class)->store(UploadedFile::fake()->createWithContent('besar.png', $header), 'x');
+    }
+
     public function test_berkas_rusak_ditolak(): void
     {
         Storage::fake('public');
