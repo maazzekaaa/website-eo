@@ -1,6 +1,5 @@
 /* =========================================================
    FZM Production v2 — admin.js (dipakai semua halaman admin)
-   - Penjaga login (prototipe: sessionStorage/localStorage)
    - Sidebar: lipat/buka (diingat), indikator aktif meluncur,
      laci di ponsel
    - Topbar: bayangan saat scroll, dropdown, pintasan "/"
@@ -20,17 +19,12 @@
     clear: function (k) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} }
   };
 
-  /* ---------- Penjaga login (Django: @login_required) ---------- */
-  var session = store.get('fzm_admin');
-  var valid = false;
-  try { var parsed = JSON.parse(session || 'null'); valid = !!(parsed && parsed.exp > Date.now()); } catch (e) {}
-  if (!valid) { store.clear('fzm_admin'); location.replace('login.html'); return; }
-  try {
-    var who = JSON.parse(session).email || 'admin';
-    $$('[data-admin-email]').forEach(function (el) { el.textContent = who; });
-  } catch (e) {}
+  /* ---------- Keluar: harus POST dengan token CSRF ---------- */
   $$('[data-logout]').forEach(function (a) {
-    a.addEventListener('click', function (e) { e.preventDefault(); store.clear('fzm_admin'); location.href = 'login.html'; });
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var f = $('#logoutForm'); if (f) f.submit();
+    });
   });
 
   /* ---------- Sidebar ---------- */
@@ -128,6 +122,12 @@
     $$('[data-reveal]').forEach(function (el) { io.observe(el); });
   } else $$('[data-reveal]').forEach(function (el) { el.classList.add('is-in'); });
 
+  /* ---------- Baris tabel yang bisa diklik ---------- */
+  $$('tr[data-href]').forEach(function (tr) {
+    tr.addEventListener('click', function (e) { if (!e.target.closest('a, button, form')) location.href = tr.getAttribute('data-href'); });
+    tr.addEventListener('keydown', function (e) { if (e.key === 'Enter') location.href = tr.getAttribute('data-href'); });
+  });
+
   /* ---------- Sorotan cursor ---------- */
   $$('.stat-glow, .hero-card').forEach(function (c) {
     c.addEventListener('pointermove', function (e) {
@@ -138,4 +138,14 @@
   });
 
   window.FZM = { toast: toast, countUp: countUp, rp: rp, $: $, $$: $$, reduce: reduce };
+
+  /* ---------- Pesan hasil aksi dari server ---------- */
+  var flash = $('#flashData');
+  if (flash) {
+    try {
+      var msg = JSON.parse(flash.textContent);
+      if (msg.ok) toast(msg.ok);
+      if (msg.error) toast(msg.error, true);
+    } catch (e) {}
+  }
 })();

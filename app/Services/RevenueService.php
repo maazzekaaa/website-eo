@@ -67,6 +67,7 @@ class RevenueService
             ->withSum(['payments as paid' => fn ($q) => $q->whereNull('voided_at')], 'amount')
             ->latest('id')->limit(100)->get()
             ->map(fn (Booking $b) => [
+                'id' => $b->id,
                 'code' => $b->booking_code,
                 'name' => $b->customer_name,
                 'date' => $b->event_date->toDateString(),

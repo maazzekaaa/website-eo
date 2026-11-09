@@ -376,3 +376,19 @@ dialog.modal[open]::backdrop { background: rgba(13, 13, 13, .35); -webkit-backdr
 .stack { display: flex; flex-direction: column; gap: 16px; }
 .split2 { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 @media (max-width: 1100px) { .split2 { grid-template-columns: 1fr; } }
+
+/* =========================================================
+   Halaman Laravel di luar prototipe: daftar dan formulir kelola
+   ========================================================= */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 16px; }
+.pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 16px; }
+.form-stack { display: flex; flex-direction: column; gap: 16px; max-width: 760px; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.check-line { display: flex; align-items: center; gap: 10px; font-size: 14px; min-height: 44px; }
+.check-line input { width: 18px; height: 18px; accent-color: var(--red); }
+.option-row { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+.thumb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.thumb-grid figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.thumb-grid img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; display: block; }
+.table-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.logo-preview { max-height: 56px; display: block; }

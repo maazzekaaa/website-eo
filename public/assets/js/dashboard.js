@@ -52,6 +52,7 @@
   $('#stMonthNote').textContent = 'vs 1–' + D + ' ' + MONTHS[prevM];
 
   function spark(svg, values) {
+    if (values.length < 2) values = [0].concat(values.length ? values : [0]);
     var max = Math.max.apply(null, values) || 1, w = 96, hh = 30;
     var pts = values.map(function (v, i) { return [i / (values.length - 1) * w, 32 - v / max * hh]; });
     var d = pts.map(function (p, i) {
@@ -66,7 +67,7 @@
   spark($('#sparkMonth'), (data.monthly[Y] || []).slice(-7));
 
   /* ---------- Booking (dipakai statistik, donut, agenda, tabel) ---------- */
-  var bookings = data.bookings.map(function (b) { b.dp = Math.ceil(b.total / 2 / 1000) * 1000; return b; });
+  var bookings = data.bookings;
   var payKey = function (b) { return b.paid >= b.total ? 'paid' : b.paid >= b.dp ? 'dp' : 'unpaid'; };
   var PAY = { unpaid: 'Belum bayar', dp: 'DP', paid: 'Lunas' };
   var ST = { pending: 'Menunggu', confirmed: 'Dikonfirmasi', completed: 'Selesai', rejected: 'Ditolak', cancelled: 'Dibatalkan' };
@@ -81,7 +82,7 @@
     $('#stPendingNote').textContent = ready + ' siap dikonfirmasi (DP masuk)';
     F.countUp($('#stRest'), rest, rp, first ? 1300 : 700);
     $('#stRestNote').textContent = owing.length + ' booking belum lunas';
-    var nav = $('.side-nav a[href="booking.html"] .side-count'); if (nav) nav.textContent = pend.length;
+    var nav = $('.side-nav a[data-nav="bookings"] .side-count'); if (nav) nav.textContent = pend.length;
   }
   F.countUp($('#stToday'), todayVal, rp, 1300);
   F.countUp($('#stMonth'), monthVal, rp, 1500);
@@ -296,6 +297,7 @@
   function openDrawer(code) {
     var b = bookings.filter(function (x) { return x.code === code; })[0]; if (!b) return;
     current = b; lastFocus = document.activeElement;
+    $('#dwOpen').href = b.url;
     var pk = payKey(b), pct = Math.min(100, Math.round(b.paid / b.total * 100));
     $('#dwCode').textContent = b.code;
     $('#dwTitle').textContent = b.name;
@@ -337,9 +339,9 @@
     if (b.paid < b.dp) { F.toast('DP 50% belum tercatat untuk ' + b.code + '.', true); return; }
     var clash = bookings.filter(function (x) { return x !== b && x.status === 'confirmed' && x.date === b.date; })[0];
     if (clash) { F.toast('Tanggal ' + fmtDate(b.date) + ' sudah dikunci ' + clash.code + '.', true); return; }
-    b.status = 'confirmed';                                // Django: POST /admin/bookings/<id>/confirm
-    F.toast(b.code + ' dikonfirmasi. ' + fmtDate(b.date) + ' kini terkunci.');
-    closeDrawer(); renderTable(); refreshStats(false); renderDonut(); renderAgenda();
+    var f = $('#confirmForm');
+    f.action = b.confirmUrl;
+    f.submit();
   });
 
   /* ---------- Unduh rekap (CSV) ---------- */
