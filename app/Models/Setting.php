@@ -22,6 +22,11 @@ class Setting extends Model
     /** Satu-satunya baris pengaturan, disimpan di cache. */
     public static function current(): self
     {
-        return Cache::rememberForever('settings.current', fn () => static::query()->first() ?? new static(['company_name' => 'FZM Production Mediatama']));
+        // Simpan atribut mentah, bukan objek: Laravel 13 tidak meng-unserialize objek dari cache.
+        $attributes = Cache::rememberForever('settings.current', fn () => static::query()->first()?->getAttributes() ?? []);
+
+        return $attributes === []
+            ? new static(['company_name' => 'FZM Production Mediatama'])
+            : (new static)->newFromBuilder($attributes);
     }
 }
