@@ -155,7 +155,7 @@ Catatan: tabel `packages` dari ERD v0.1 digantikan oleh `services` + `service_op
 Admin: `/admin/login` · `/admin` (dashboard) · `/admin/bookings` (+ detail, pembayaran, invoice, kuitansi) · `/admin/services` · `/admin/portfolios` · `/admin/clients` · `/admin/settings`
 
 ## 11. Teknologi
-Laravel (MVC) · MySQL · Blade + Tailwind CSS + Alpine.js (interaksi keranjang, folder, lightbox) · Chart.js (grafik pendapatan) · barryvdh/laravel-dompdf (PDF invoice & kuitansi) · Figma/Draw.io.
+Laravel 13 (MVC) · MySQL · Blade + CSS dan JavaScript prototipe tanpa build tool (keranjang, folder, lightbox, grafik SVG) · barryvdh/laravel-dompdf (PDF invoice & kuitansi) · Figma/Draw.io.
 **Hosting: perlu diputuskan** — Vercel tidak mendukung PHP native. Opsi: hosting PHP (cPanel), VPS, atau container (Railway/Render/Laravel Cloud).
 
 ## 12. Pengujian & Kriteria Penerimaan

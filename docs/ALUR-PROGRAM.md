@@ -13,7 +13,7 @@ flowchart LR
     C --> S[Service: CartPricingService, BookingService,<br/>PaymentService, DocumentNumberService,<br/>RevenueService, WhatsAppService]
     S --> MD[Model Eloquent]
     MD --> DB[(MySQL)]
-    C --> V[View Blade + Tailwind + Alpine.js]
+    C --> V[View Blade + CSS/JS prototipe]
     C --> PDF[dompdf: invoice & kuitansi]
     V --> U
     C --> ST[(Storage: foto, logo, bukti transfer, tanda tangan)]
