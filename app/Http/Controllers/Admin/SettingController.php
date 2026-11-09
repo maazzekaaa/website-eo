@@ -52,8 +52,9 @@ class SettingController extends Controller
 
         foreach (['hero' => ['hero_image', 'site'], 'signature' => ['signature_path', 'site']] as $field => [$column, $dir]) {
             if ($request->file($field)) {
-                $images->delete($setting->{$column});
+                // Simpan yang baru dulu: bila gagal diolah, gambar lama tetap utuh.
                 $data[$column] = $images->store($request->file($field), $dir);
+                $images->delete($setting->{$column});
             }
         }
 

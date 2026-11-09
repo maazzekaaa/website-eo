@@ -52,7 +52,7 @@
     </article>
 
     <article class="card form-stack">
-      <div class="card-head"><div><h2>Foto</h2><p>JPG, PNG, atau WebP, maks. 5 MB per foto. Otomatis diubah ke WebP.</p></div></div>
+      <div class="card-head"><div><h2>Foto</h2><p>JPG, PNG, atau WebP, maks. 5 MB per foto. Otomatis diubah ke WebP. Batas server saat ini: {{ round(\Illuminate\Http\UploadedFile::getMaxFilesize() / 1048576, 1) }} MB per sekali simpan.</p></div></div>
       <div class="field"><label for="photos">Tambah foto</label><input class="input" id="photos" name="photos[]" type="file" multiple accept="image/jpeg,image/png,image/webp">
         @error('photos')<span class="field-error">{{ $message }}</span>@enderror
         @error('photos.*')<span class="field-error">{{ $message }}</span>@enderror

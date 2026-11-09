@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
   <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
 </head>
-<body class="admin-body">
+<body class="admin-body" data-upload-limit="{{ \Illuminate\Http\UploadedFile::getMaxFilesize() }}">
 <div class="app">
   <aside class="side" aria-label="Sidebar admin">
     <div class="side-top">

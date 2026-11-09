@@ -26,6 +26,8 @@ herd link fzm-website
 
 Panel admin ada di `http://fzm-website.test/admin`, dengan akun lokal `admin@fzm.id` / `admin123`.
 
+Herd membatasi unggahan 2 MB secara default, baik di nginx maupun PHP. Agar foto portofolio sampai 5 MB bisa diunggah, naikkan batasnya di pengaturan PHP aplikasi Herd, misalnya ke 64 MB. Sebelum itu, panel admin menolak unggahan di atas batas dengan pesan yang jelas.
+
 ## Melihat database di TablePlus
 
 Buat koneksi MySQL baru: host `127.0.0.1`, port `3310`, user `root`, kata sandi kosong, database `fzm_production`.

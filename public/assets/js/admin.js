@@ -139,6 +139,23 @@
 
   window.FZM = { toast: toast, countUp: countUp, rp: rp, $: $, $$: $$, reduce: reduce };
 
+  /* ---------- Unggahan: nginx Herd menolak di atas batas sebelum PHP berjalan ---------- */
+  var uploadLimit = +document.body.getAttribute('data-upload-limit') || 0;
+  $$('form[enctype="multipart/form-data"]').forEach(function (f) {
+    f.addEventListener('submit', function (e) {
+      if (!uploadLimit) return;
+      var total = 0;
+      $$('input[type="file"]', f).forEach(function (input) {
+        Array.prototype.forEach.call(input.files, function (file) { total += file.size; });
+      });
+      if (total > uploadLimit) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        toast('Berkas terlalu besar (' + (total / 1048576).toFixed(1) + ' MB). Batas server ' + (uploadLimit / 1048576).toFixed(1) + ' MB per sekali simpan.', true);
+      }
+    });
+  });
+
   /* ---------- Pesan hasil aksi dari server ---------- */
   var flash = $('#flashData');
   if (flash) {

@@ -26,12 +26,12 @@ class PaymentController extends Controller
             'amount' => ['required', 'integer', 'min:1'],
             'type' => ['required', Rule::in(array_keys(Payment::TYPE_LABELS))],
             'method' => ['required', Rule::in(array_keys(Payment::METHOD_LABELS))],
-            'paid_at' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'paid_at' => ['required', 'date_format:Y-m-d', 'before_or_equal:today', 'after_or_equal:'.$booking->created_at->copy()->subYear()->toDateString()],
             'proof' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'note' => ['nullable', 'string', 'max:500'],
         ], [
             'amount.*' => 'Nominal harus lebih dari 0.',
-            'paid_at.*' => 'Tanggal bayar tidak boleh di masa depan.',
+            'paid_at.*' => 'Tanggal bayar tidak valid. Periksa tahunnya, dan tanggal tidak boleh di masa depan.',
             'proof.*' => 'Bukti harus gambar JPG/PNG/WebP maks. 2 MB.',
         ]);
 

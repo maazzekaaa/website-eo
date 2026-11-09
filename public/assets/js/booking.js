@@ -122,12 +122,22 @@
     $('#dropText').textContent = '✓ ' + f.name + ' (' + Math.round(f.size / 1024) + ' KB)';
   });
 
-  $('#payForm').addEventListener('submit', function (e) {
+  var payForm = $('#payForm'), saveLabel = $('#paySave').innerHTML;
+  payForm.addEventListener('submit', function (e) {
+    if (payForm.dataset.sent) { e.preventDefault(); return; }   // cegah pembayaran tercatat dua kali
     var n = parseAmt();
     if (n <= 0 || n > rest()) { e.preventDefault(); amount.classList.add('is-invalid'); $('#amountErr').hidden = false; amount.focus(); return; }
+    payForm.dataset.sent = '1';
     var btn = $('#paySave');
     btn.setAttribute('aria-disabled', 'true');
     btn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Menyimpan…';
+  });
+
+  window.addEventListener('pageshow', function (e) {            // kembali lewat tombol Back
+    if (!e.persisted) return;
+    delete payForm.dataset.sent;
+    $('#paySave').removeAttribute('aria-disabled');
+    $('#paySave').innerHTML = saveLabel;
   });
 
   /* ---------- Aksi status ---------- */

@@ -61,8 +61,9 @@ class ClientController extends Controller
         unset($data['logo']);
 
         if ($request->file('logo')) {
-            $this->images->delete($client->logo);
+            // Simpan yang baru dulu: bila gagal diolah, logo lama tetap utuh.
             $data['logo'] = $this->images->store($request->file('logo'), 'clients');
+            $this->images->delete($client->logo);
         }
 
         return $data;
