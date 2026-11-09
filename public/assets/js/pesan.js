@@ -53,8 +53,13 @@
         if (n > 0) lines.push({ desc: name + ' (' + n + ' ' + q.getAttribute('data-unit') + ')', value: n * +q.getAttribute('data-price') });
       }
     });
-    var total = lines.reduce(function (a, l) { return a + l.value; }, 0);
-    return { lines: lines, total: total, dp: Math.ceil(total / 2 / 1000) * 1000 };
+    var subtotal = lines.reduce(function (a, l) { return a + l.value; }, 0);
+    var count = lines.length;
+    var rate = +cfg.taxRate || 0;
+    var tax = rate ? Math.floor((subtotal * rate + 50) / 100) : 0;
+    if (tax) lines.push({ desc: 'PPN ' + rate + '%', value: tax });
+    var total = subtotal + tax;
+    return { lines: lines, count: count, total: total, dp: Math.min(total, Math.ceil(total / 2 / 1000) * 1000) };
   }
 
   var prevKeys = '';
@@ -68,7 +73,7 @@
       }).join('');
       prevKeys = keys;
     }
-    $('#sumCount').textContent = c.lines.length + ' item';
+    $('#sumCount').textContent = c.count + ' item';
     tweenTo($('#sumTotal'), c.total);
     tweenTo($('#sumDp'), c.dp);
     tweenTo($('#barTotal'), c.total);
@@ -120,6 +125,13 @@
   var today = parse(cfg.today);
   var view = { y: today.getFullYear(), m: today.getMonth() };
   var selected = null;
+  var oldDate = cfg.old && cfg.old.event_date;
+  if (oldDate && /^\d{4}-\d{2}-\d{2}$/.test(oldDate) && parse(oldDate) >= today) {
+    selected = oldDate;
+    view = { y: parse(oldDate).getFullYear(), m: parse(oldDate).getMonth() };
+    $('#eventDate').value = selected;
+    $('#sumDate').textContent = label(selected);
+  }
 
   function renderCal(animate) {
     var first = new Date(view.y, view.m, 1);
@@ -159,7 +171,24 @@
     if (view.m < 0) { view.m = 11; view.y--; }
     if (view.m > 11) { view.m = 0; view.y++; }
     renderCal(true);
-    // Django: fetch('/api/availability?month=' + view.y + '-' + pad(view.m + 1)).then(r => r.json()).then(…)
+    loadMonth();
+  }
+  function loadMonth() {
+    if (!cfg.availabilityUrl) return;
+    var y = view.y, m = view.m;
+    fetch(cfg.availabilityUrl + '?month=' + y + '-' + pad(m + 1), { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : { locked: [] }; })
+      .then(function (d) {
+        (d.locked || []).forEach(function (k) { locked[k] = true; });
+        if (selected && locked[selected]) {
+          selected = null;
+          $('#eventDate').value = '';
+          $('#sumDate').textContent = 'Belum dipilih';
+          $('#errDate').hidden = false;
+        }
+        if (view.y === y && view.m === m) renderCal(false);
+      })
+      .catch(function () { /* jaringan gagal: server tetap memeriksa saat dikirim */ });
   }
   $('#calPrev').addEventListener('click', function () { shift(-1); });
   $('#calNext').addEventListener('click', function () { shift(1); });
@@ -174,8 +203,7 @@
   });
 
   form.addEventListener('submit', function (e) {
-    e.preventDefault();                                   // Django: hapus bila form dikirim ke server
-    if ($('#website').value) return;                      // honeypot
+    e.preventDefault();
     var c = readCart();
     var name = $('#name'), wa = $('#wa'), loc = $('#loc');
     var d = wa.value.replace(/\D/g, '');
@@ -192,21 +220,9 @@
       if (t.tagName === 'INPUT') t.focus({ preventScroll: true });
       return;
     }
-    var td = parse(cfg.today);
-    var code = 'FZM-' + td.getFullYear() + pad(td.getMonth() + 1) + pad(td.getDate()) + '-' + (1000 + Math.floor(Math.random() * 9000));
-    var time = $('#time').value;
-    var text = 'Halo FZM, saya ingin memesan.\nKode: ' + code + '\n' +
-      c.lines.map(function (l) { return '- ' + l.desc + ': ' + rp(l.value); }).join('\n') +
-      '\nTotal: ' + rp(c.total) + '\nDP 50%: ' + rp(c.dp) +
-      '\nTanggal: ' + label(selected) + (time ? ', ' + time : '') +
-      '\nLokasi: ' + loc.value.trim() + '\nNama: ' + name.value.trim();
-    $('#okCode').textContent = code;
-    $('#okText').textContent = text;
-    $('#okWa').href = 'https://wa.me/' + cfg.adminWa + '?text=' + encodeURIComponent(text);
-    form.hidden = true;
-    $('#mbar').hidden = true;
-    $('#successView').hidden = false;
-    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    if (form.dataset.sent) return;                        // cegah kirim ganda
+    form.dataset.sent = '1';
+    form.submit();
   });
 
   /* ---------- Bar ponsel: sembunyi saat ringkasan terlihat ---------- */
@@ -230,5 +246,6 @@
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   renderCal(false);
+  if (selected) loadMonth();
   renderSummary();
 })();
