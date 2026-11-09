@@ -1,0 +1,86 @@
+/* =========================================================
+   FZM Production — document.css
+   Invoice (A4) dan kuitansi (A5 landscape), siap cetak.
+   Klik "Cetak" → pilih "Simpan sebagai PDF" untuk PDF.
+   (Di Laravel, view yang sama bisa dirender dompdf.)
+   ========================================================= */
+
+body.doc-body { background: #E9E9E9; font-family: "Inter", Arial, sans-serif; color: #111; }
+
+.doc-toolbar {
+  position: sticky; top: 0; z-index: 10; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+  padding: 12px; background: rgba(14, 14, 14, .9); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.doc-toolbar .btn { border-radius: 12px; font-size: 14px; }
+
+.sheet {
+  background: #FFF; margin: 24px auto; position: relative; overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .12); font-size: 14px; line-height: 1.45;
+}
+.sheet--a4 { width: 210mm; min-height: 297mm; padding: 15mm 17mm; display: flex; flex-direction: column; gap: 26px; }
+.sheet--a5l { width: 210mm; min-height: 148mm; padding: 10.5mm 12.7mm; display: flex; flex-direction: column; gap: 20px; }
+
+.sheet--a4::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; background: #E11D2E; }
+.sheet--a5l::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: #E11D2E; }
+
+/* Kop invoice (mengikuti format referensi) */
+.inv-head { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.inv-head h1 { margin: 0 0 10px; font-family: inherit; font-size: 20px; font-weight: 700; letter-spacing: .06em; }
+.inv-head strong { font-size: 16px; font-weight: 600; }
+
+.inv-info { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 40px; }
+.inv-info div { display: flex; flex-direction: column; }
+.inv-info b { font-weight: 700; }
+.inv-info .group { gap: 12px; }
+
+.inv-table { width: 100%; border-collapse: collapse; }
+.inv-table th { background: #E11D2E; color: #FFF; padding: 10px 8px; border: 1px solid #111; font-weight: 700; text-align: center; }
+.inv-table td { padding: 10px 8px; border: 1px solid #111; }
+.inv-table .num { text-align: right; white-space: nowrap; }
+
+.inv-bottom { display: flex; gap: 32px; align-items: flex-start; }
+.inv-history { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.inv-history table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.inv-history th { text-align: left; padding: 6px; border-bottom: 1px solid #111; }
+.inv-history td { padding: 6px; border-bottom: 1px solid #CFCFCF; }
+.inv-totals { width: 290px; display: flex; flex-direction: column; gap: 9px; }
+.inv-totals div { display: flex; justify-content: space-between; }
+.inv-totals .strong { font-weight: 700; }
+.inv-totals .rest { font-weight: 700; padding: 8px 10px; background: #FDE7E9; color: #8E0F1B; }
+
+.inv-payinfo { border: 1px solid #111; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.inv-payinfo b { font-size: 16px; }
+
+.doc-sign { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 220px; text-align: center; }
+.doc-sign .space { height: 64px; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #767676; }
+.doc-sign .space img { max-height: 64px; }
+.doc-sign b { border-top: 1px solid #111; padding-top: 4px; width: 100%; }
+.doc-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
+.stamp { transform: rotate(-8deg); border: 3px solid #E11D2E; color: #E11D2E; padding: 8px 18px; font-size: 22px; font-weight: 700; letter-spacing: .12em; border-radius: 6px; }
+.stamp--paid { border-color: #1C6B37; color: #1C6B37; }
+
+/* Kuitansi */
+.kw-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 14px; border-bottom: 2px solid #111; }
+.kw-head h1 { margin: 0; font-family: inherit; font-size: 24px; font-weight: 700; letter-spacing: .1em; }
+.kw-company { display: flex; flex-direction: column; align-items: flex-end; text-align: right; font-size: 12px; }
+.kw-company b { font-size: 14px; }
+.kw-rows { display: grid; grid-template-columns: 170px 1fr; gap: 12px 16px; }
+.kw-rows dt { font-weight: 600; }
+.kw-rows dd { margin: 0; border-bottom: 1px dotted #767676; padding-bottom: 2px; }
+.kw-rows .say { font-style: italic; }
+.kw-amount { display: inline-flex; align-items: center; gap: 12px; border: 2px solid #111; padding: 10px 18px; }
+.kw-amount b { font-size: 26px; }
+.kw-left { display: flex; flex-direction: column; gap: 10px; }
+.kw-left small { font-size: 12px; }
+
+/* Cetak */
+@media print {
+  body.doc-body { background: #FFF; }
+  .doc-toolbar { display: none; }
+  .sheet { margin: 0; box-shadow: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+@page invoice { size: A4 portrait; margin: 0; }
+@page kuitansi { size: A5 landscape; margin: 0; }
+.sheet--a4 { page: invoice; }
+.sheet--a5l { page: kuitansi; }
