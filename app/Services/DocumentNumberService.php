@@ -20,6 +20,6 @@ class DocumentNumberService
             DB::table('document_sequences')->where('id', $sequence->id)->update(['last_number' => $number]);
 
             return sprintf('%s/%s/%03d', $prefix, $at->format('Y/m'), $number);
-        });
+        }, 3);
     }
 }

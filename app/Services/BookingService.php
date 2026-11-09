@@ -10,13 +10,17 @@ use Illuminate\Support\Facades\DB;
 
 class BookingService
 {
+    /** Transaksi diulang bila MySQL membatalkannya karena deadlock antar-admin. */
+    private const ATTEMPTS = 3;
+
     public function __construct(private DocumentNumberService $numbers) {}
 
     /** Simpan booking pending beserta salinan harga. Ditolak jika tanggal sudah terkunci. */
     public function create(array $data, PricedCart $cart): Booking
     {
         return DB::transaction(function () use ($data, $cart) {
-            if ($this->dateTaken($data['event_date'])) {
+            // Pending tidak mengunci tanggal, jadi cukup baca biasa tanpa kunci baris.
+            if (Booking::whereDate('confirmed_date', $data['event_date'])->exists()) {
                 throw new DateUnavailable;
             }
 
@@ -40,7 +44,7 @@ class BookingService
             $booking->items()->createMany($cart->lines);
 
             return $booking;
-        });
+        }, self::ATTEMPTS);
     }
 
     /** Kunci tanggal. Syarat: masih pending, DP tercatat, tanggal belum dikunci booking lain. */
@@ -59,7 +63,7 @@ class BookingService
                 }
 
                 $locked->update(['status' => 'confirmed']);
-            });
+            }, self::ATTEMPTS);
         } catch (UniqueConstraintViolationException) {
             throw new DateUnavailable('Tanggal '.$booking->event_date->translatedFormat('j F Y').' sudah dikunci booking lain.');
         }
@@ -86,7 +90,7 @@ class BookingService
             }
 
             $locked->update(['status' => 'completed']);
-        });
+        }, self::ATTEMPTS);
     }
 
     protected function dateTaken(string $date, ?int $exceptId = null): bool
@@ -110,7 +114,7 @@ class BookingService
             }
 
             $locked->update(['status' => $status, 'admin_note' => $note]);
-        });
+        }, self::ATTEMPTS);
     }
 
     private function requireStatus(Booking $booking, array $allowed, string $message): void

@@ -39,7 +39,7 @@ class PaymentService
             $this->syncStatus($locked);
 
             return $payment;
-        });
+        }, 3);
     }
 
     /** Batalkan pembayaran salah input. Nomor kuitansi tidak dipakai ulang. */
@@ -61,7 +61,7 @@ class PaymentService
 
             $locked->update(['voided_at' => now(), 'void_reason' => trim($reason)]);
             $this->syncStatus($booking);
-        });
+        }, 3);
     }
 
     private function syncStatus(Booking $booking): void
