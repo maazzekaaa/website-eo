@@ -17,25 +17,27 @@
 </head>
 <body>
 
+  <a class="brand-pill" href="{{ route('home') }}" aria-label="FZM Production, beranda">FZM</a>
+  @hasSection('corner')
+    <span class="corner-pill" id="cornerPill">@yield('corner')</span>
+  @endif
+
   <nav class="nav" aria-label="Navigasi utama">
-    <a class="brand" href="{{ route('home') }}" aria-label="FZM Production, beranda"><span class="brand-mark">FZ</span><span class="brand-name">FZM Production</span></a>
     <div class="nav-links">
-      <a href="{{ route('layanan.index') }}" @if (request()->routeIs('layanan.*')) aria-current="page" @endif>Layanan</a>
-      <a href="{{ route('portofolio.index') }}" @if (request()->routeIs('portofolio.*')) aria-current="page" @endif>Portofolio</a>
-      <a href="{{ route('klien.index') }}" @if (request()->routeIs('klien.*')) aria-current="page" @endif>Klien</a>
-      <a href="{{ route('tentang') }}" @if (request()->routeIs('tentang')) aria-current="page" @endif>Tentang</a>
-      <a href="{{ route('kontak') }}" @if (request()->routeIs('kontak')) aria-current="page" @endif>Kontak</a>
+      <a href="{{ route('home') }}"@if (request()->routeIs('home')) aria-current="page"@endif>Beranda</a>
+      <a href="{{ route('layanan.index') }}"@if (request()->routeIs('layanan.*')) aria-current="page"@endif>Layanan</a>
+      <a href="{{ route('portofolio.index') }}"@if (request()->routeIs('portofolio.*')) aria-current="page"@endif>Portofolio</a>
+      <a href="{{ route('klien.index') }}"@if (request()->routeIs('klien.*')) aria-current="page"@endif>Klien</a>
+      <a href="{{ route('tentang') }}"@if (request()->routeIs('tentang')) aria-current="page"@endif>Tentang</a>
+      <a href="{{ route('kontak') }}"@if (request()->routeIs('kontak')) aria-current="page"@endif>Kontak</a>
     </div>
     <div class="nav-actions">
-      @hasSection('nav-back')
-        <a class="btn btn-ghost nav-cta" href="{{ route('home') }}"><span aria-hidden="true">←</span> Beranda</a>
-      @else
-        <a class="btn nav-cta" href="{{ route('pesan.create') }}">Pesan Sekarang <span class="arrow" aria-hidden="true">→</span></a>
-      @endif
+      <a class="btn nav-cta" href="{{ route('pesan.create') }}"@if (request()->routeIs('pesan.*')) aria-current="page"@endif>Pesan</a>
       <button class="icon-btn nav-burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="navSheet"><span></span></button>
     </div>
   </nav>
   <div class="nav-sheet" id="navSheet" hidden>
+    <a href="{{ route('home') }}">Beranda</a>
     <a href="{{ route('layanan.index') }}">Layanan</a>
     <a href="{{ route('portofolio.index') }}">Portofolio</a>
     <a href="{{ route('klien.index') }}">Klien</a>

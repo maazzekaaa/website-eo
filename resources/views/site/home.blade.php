@@ -1,47 +1,34 @@
 @extends('layouts.site')
 
+@section('corner', $prints->isEmpty() ? '00 — 00' : '01 — '.str_pad((string) $prints->count(), 2, '0', STR_PAD_LEFT))
+
 @section('content')
   <main>
-    <header class="hero">
-      <div class="container">
-        <div class="hero-top" data-reveal>
-          <span class="meta">(FZM) Event Organizer &amp; Produksi Panggung</span>
-          <span class="meta">Indonesia · WIB</span>
-        </div>
-        <h1 class="split">
-          @foreach ($heroLines as $line)
-            <span class="line"><span style="--d:{{ $loop->index }}">@if ($loop->last && str_contains($line, ' ')){{ Str::beforeLast($line, ' ') }} <span class="text-gradient">{{ Str::afterLast($line, ' ') }}</span>@else{{ $line }}@endif</span></span>
-          @endforeach
-        </h1>
-        <div class="hero-bottom">
-          <p class="hero-lead" data-reveal style="--d:3">{{ setting('hero_subtitle') }}</p>
-          <div class="hero-actions" data-reveal style="--d:4">
-            <a class="btn btn-red btn-lg" href="{{ route('pesan.create') }}">Cek jadwal &amp; pesan <span class="arrow" aria-hidden="true">→</span></a>
-            <a class="btn btn-ghost btn-lg" href="#portofolio">Lihat portofolio</a>
-          </div>
-        </div>
-
-        <div class="hero-media" data-reveal style="--d:5" aria-hidden="true">
-          <div class="hero-media-inner">
-            @if (setting('hero_image'))
-              <img src="{{ Storage::disk('public')->url(setting('hero_image')) }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
-            @else
-              <span class="beam beam--1"></span><span class="beam beam--2"></span><span class="beam beam--3"></span>
-              <div class="lamps"><i></i><i></i><i></i></div>
-              <div class="led" id="led"></div>
-              <div class="floor"></div>
-            @endif
-          </div>
-          @if ($portfolios->first())
-            <div class="hero-caption"><span class="meta">{{ $portfolios->first()->title }}@if ($portfolios->first()->event_date) — {{ $portfolios->first()->event_date->translatedFormat('F Y') }}@endif</span><span class="meta">{{ str_replace(', ', ' · ', (string) $portfolios->first()->services) }}</span></div>
-          @endif
+    <header class="stage" id="stage">
+      <div class="stage-copy">
+        <h1 class="poster split"><span class="line"><span>FZM Production</span></span></h1>
+        <span class="poster-rule" aria-hidden="true"></span>
+        <p class="stage-title" data-reveal style="--d:1">{{ str_replace(["\r\n", "\n"], ' ', (string) setting('hero_title')) }}</p>
+        <p class="poster-lead" data-reveal style="--d:2">{{ setting('hero_subtitle') }}</p>
+        <div class="stage-actions" data-reveal style="--d:3">
+          <a class="btn btn-red" href="{{ route('pesan.create') }}">Cek jadwal &amp; pesan <span class="arrow" aria-hidden="true">→</span></a>
+          <a class="btn btn-ghost" href="{{ route('portofolio.index') }}">Lihat portofolio</a>
         </div>
       </div>
 
-      <div class="marquee" aria-hidden="true">
-        <div class="marquee-track">
-          @foreach ($services as $service)<span>{{ $service->name }}</span>@endforeach
-        </div>
+      <div class="deck" id="deck">
+        @forelse ($prints as $print)
+          <a class="deck-card" href="{{ $print['link'] }}" aria-label="Lihat foto {{ $print['title'] }}"
+            data-title="{{ $print['title'] }}" data-client="{{ $print['client'] }}" data-category="{{ $print['category'] }}"
+            data-location="{{ $print['location'] }}" data-date="{{ $print['date'] }}" data-photos="{{ json_encode($print['photos']) }}"
+            data-index="{{ $print['index'] }}" data-no="{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}">
+            <img src="{{ $print['url'] }}" alt="" draggable="false">
+          </a>
+        @empty
+          @foreach (['', ' ph--alt', '', ' ph--alt'] as $variant)
+            <span class="deck-card is-placeholder" aria-hidden="true"><span class="ph{{ $variant }}"></span></span>
+          @endforeach
+        @endforelse
       </div>
     </header>
 
@@ -59,26 +46,6 @@
             @include('partials.service-row')
           @endforeach
         </ul>
-      </div>
-    </section>
-
-    <section class="section section--paper" id="portofolio">
-      <div class="container">
-        <div class="sec-head">
-          <div>
-            <div class="sec-label" data-reveal><span class="meta-num">(02)</span><span class="meta">Portofolio</span></div>
-            <h2 class="split"><span class="line"><span>Arsip acara yang</span></span><span class="line"><span style="--d:1">pernah kami tangani.</span></span></h2>
-          </div>
-          <p data-reveal style="--d:2">Arahkan kursor ke folder untuk mengintip isinya, klik untuk membuka galeri foto acara. <a class="link-arrow" href="{{ route('portofolio.index') }}"><span>Lihat semua</span></a></p>
-        </div>
-
-        @include('partials.folder-filters')
-
-        <div class="folder-grid" id="folderGrid">
-          @foreach ($portfolios as $portfolio)
-            @include('partials.folder-card')
-          @endforeach
-        </div>
       </div>
     </section>
 
@@ -118,4 +85,8 @@
 
 @push('after')
   @include('partials.lightbox')
+@endpush
+
+@push('scripts')
+  <script src="{{ asset('assets/js/stage.js') }}"></script>
 @endpush

@@ -3,7 +3,6 @@
 @section('title', 'Pesan — FZM Production Mediatama')
 @section('description', 'Susun layanan, cek tanggal, dan pesan acara di FZM Production Mediatama.')
 @section('theme', '#F7F7F6')
-@section('nav-back', '1')
 @section('no-footer', '1')
 @section('wa-text', 'Halo FZM, saya ingin bertanya sebelum memesan.')
 @section('wa-label', 'Tanya dulu')

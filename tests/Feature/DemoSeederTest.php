@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\Client;
 use App\Models\Portfolio;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoSeeder;
@@ -29,6 +30,9 @@ class DemoSeederTest extends TestCase
         $this->seed(DemoSeeder::class);
 
         $this->assertSame(8, Portfolio::count());
+        $this->assertSame(3, Client::count());
+        $this->assertSame(0, Portfolio::whereNull('client_id')->count());
+        $this->assertSame(0, Portfolio::where('location', 'like', '[%')->count());
         $this->assertGreaterThanOrEqual(3, Portfolio::first()->images()->count());
         $this->assertGreaterThanOrEqual(7, Booking::count());
 

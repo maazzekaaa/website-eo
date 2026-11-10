@@ -6,7 +6,7 @@
 @endphp
 <button class="folder folder--{{ $portfolio->folder_color }}" type="button" data-reveal style="--d:{{ $loop->index % 4 }}"
   data-category="{{ $portfolio->category }}" data-title="{{ $portfolio->title }}"
-  data-date="{{ $portfolio->event_date?->translatedFormat('F Y') }}" data-client="{{ $portfolio->client?->name ?? 'Klien Pribadi' }}"
+  data-date="{{ $portfolio->event_date?->translatedFormat('j F Y') }}" data-client="{{ $portfolio->client?->name ?? 'Klien Pribadi' }}"
   data-location="{{ $portfolio->location }}" data-services="{{ $portfolio->services }}" data-count="{{ max($count, 1) }}"
   data-photos="{{ $photos->toJson() }}" data-story="{{ $portfolio->story }}" aria-label="Buka galeri {{ $portfolio->title }}">
   <span class="folder-icon" aria-hidden="true"><span class="folder-shadow"></span><span class="folder-tab"></span><span class="folder-back"></span>

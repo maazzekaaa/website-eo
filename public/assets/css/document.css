@@ -84,3 +84,15 @@ body.doc-body { background: #E9E9E9; font-family: "Inter", Arial, sans-serif; co
 @page kuitansi { size: A5 landscape; margin: 0; }
 .sheet--a4 { page: invoice; }
 .sheet--a5l { page: kuitansi; }
+
+/* ---------- Tampilan di layar kecil. Hasil cetak tetap A4 / A5. ---------- */
+@media screen and (max-width: 860px) {
+  .sheet--a4, .sheet--a5l { width: auto; min-height: 0; margin: 12px; padding: 24px 18px; }
+  .inv-info { grid-template-columns: minmax(0, 1fr); }
+  .inv-bottom { flex-direction: column; align-items: stretch; }
+  .inv-table { display: block; overflow-x: auto; }
+  .inv-history { overflow-x: auto; }
+  .inv-totals { width: 100%; }
+  .kw-head, .doc-foot { flex-wrap: wrap; gap: 16px; }
+  .kw-rows { grid-template-columns: minmax(0, 1fr); }
+}

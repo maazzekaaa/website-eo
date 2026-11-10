@@ -44,16 +44,13 @@ class PublicPagesTest extends TestCase
     public function test_beranda_dari_database(): void
     {
         $this->portfolio();
-        Setting::current()->update(['hero_title' => "Baris satu,\nbaris kedua."]);
+        Setting::current()->update(['hero_title' => 'Judul dari pengaturan']);
 
         $this->get('/')->assertOk()
             ->assertSee('Rp3 – 10 jt')
             ->assertSee('Rp400 rb')
-            ->assertSee('folder--maroon', false)
-            ->assertSee('Konser Kampus')
             ->assertSee('Mitra Satu')
-            ->assertSee('Baris satu,')
-            ->assertSee('text-gradient', false);
+            ->assertSee('Judul dari pengaturan');
     }
 
     public function test_detail_portofolio_dan_klien(): void
@@ -62,15 +59,6 @@ class PublicPagesTest extends TestCase
 
         $this->get('/portofolio/'.$portfolio->slug)->assertOk()->assertSee('Konser Kampus')->assertSee('Mitra Satu');
         $this->get('/klien/'.$portfolio->client_id)->assertOk()->assertSee('Mitra Satu')->assertSee('Konser Kampus');
-    }
-
-    public function test_beranda_hanya_portofolio_unggulan(): void
-    {
-        $this->portfolio();
-        $this->portfolio(['title' => 'Arsip Lama', 'slug' => 'arsip-lama', 'is_featured' => false]);
-
-        $this->get('/')->assertDontSee('Arsip Lama');
-        $this->get('/portofolio')->assertSee('Arsip Lama');
     }
 
     public function test_layanan_nonaktif_404_dan_tidak_terdaftar(): void

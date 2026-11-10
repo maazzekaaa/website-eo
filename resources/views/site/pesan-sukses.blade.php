@@ -2,7 +2,6 @@
 
 @section('title', 'Pesanan terkirim — FZM Production Mediatama')
 @section('theme', '#F7F7F6')
-@section('nav-back', '1')
 @section('no-footer', '1')
 @section('no-wa-float', '1')
 

@@ -45,10 +45,10 @@
 
     <article class="card form-stack">
       <div class="card-head"><div><h2>Konten website</h2></div></div>
-      <div class="field"><label for="hero_title">Judul beranda</label><textarea class="textarea" id="hero_title" name="hero_title" style="min-height:90px">{{ old('hero_title', $setting->hero_title) }}</textarea><span class="field-hint">Setiap baris tampil sebagai satu baris judul. Kata terakhir diberi warna merah.</span></div>
+      <div class="field"><label for="hero_title">Judul beranda</label><textarea class="textarea" id="hero_title" name="hero_title" style="min-height:90px">{{ old('hero_title', $setting->hero_title) }}</textarea><span class="field-hint">Tampil sebagai kalimat utama di bawah nama perusahaan.</span></div>
       <div class="field"><label for="hero_subtitle">Subjudul beranda</label><textarea class="textarea" id="hero_subtitle" name="hero_subtitle" style="min-height:90px">{{ old('hero_subtitle', $setting->hero_subtitle) }}</textarea></div>
       <div class="field">
-        <label for="hero">Gambar beranda</label>
+        <label for="hero">Gambar beranda (tampil sebagai foto pertama di tali)</label>
         @if ($setting->hero_image)<img class="logo-preview" src="{{ Storage::disk('public')->url($setting->hero_image) }}" alt="Gambar beranda">@endif
         <input class="input" id="hero" name="hero" type="file" accept="image/jpeg,image/png,image/webp">
         @include('admin.partials.field-error', ['name' => 'hero'])

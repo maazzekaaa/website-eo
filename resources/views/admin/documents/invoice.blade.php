@@ -10,8 +10,7 @@
       <strong>{{ setting('company_name') }}</strong>
       <span>{{ setting('address') }}</span>
       <span>{{ setting('email') }} · {{ setting('wa_number') }}</span>
-      @if (setting('npwp'))<span>NPWP {{ setting('npwp') }}</span>@endif
-    </header>
+    </header>fb
 
     <section class="inv-info">
       <div><b>Invoice</b><span>{{ $booking->invoice_number }}</span></div>

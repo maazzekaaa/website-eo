@@ -21,10 +21,10 @@ use Illuminate\Http\UploadedFile;
 class DemoSeeder extends Seeder
 {
     private const GRADIENTS = [
-        'red' => [[225, 29, 46], [60, 8, 14]],
-        'black' => [[58, 58, 58], [13, 13, 13]],
-        'maroon' => [[142, 15, 27], [32, 6, 10]],
-        'silver' => [[190, 190, 195], [90, 90, 96]],
+        'red' => [[225, 29, 46], [120, 16, 28]],
+        'black' => [[40, 86, 170], [30, 40, 80]],
+        'maroon' => [[170, 40, 150], [70, 14, 60]],
+        'silver' => [[225, 170, 90], [120, 80, 40]],
     ];
 
     public function run(): void
@@ -41,7 +41,9 @@ class DemoSeeder extends Seeder
 
     private function seedPortfolios(): void
     {
-        $clients = collect(range(1, 6))->map(fn ($n) => Client::create(['name' => "Mitra {$n}", 'description' => 'Data contoh.']));
+        $clients = collect(['Mitra Nusantara Event', 'Kampus Harapan Bangsa', 'Keluarga Hartono'])
+            ->map(fn ($name) => Client::create(['name' => $name, 'description' => 'Data contoh.']));
+        $places = ['Gedung Serbaguna, Malang', 'Aula Kampus, Surabaya', 'Taman Kota, Batu', 'Studio Foto, Kediri'];
 
         $rows = [
             ['Resepsi Taman Malam', 'Wedding', 'red', '2026-08-15', null, 'Sound, Lighting', 'Tata suara dan cahaya hangat untuk resepsi outdoor.', 'Tata suara dan pencahayaan hangat untuk resepsi outdoor, lengkap dengan panggung akustik.'],
@@ -59,7 +61,7 @@ class DemoSeeder extends Seeder
         foreach ($rows as $i => [$title, $category, $color, $date, $client, $services, $caption, $story]) {
             $portfolio = Portfolio::create([
                 'title' => $title, 'slug' => str($title)->slug()->toString(), 'category' => $category, 'folder_color' => $color,
-                'event_date' => $date, 'client_id' => $client === null ? null : $clients[$client]->id, 'location' => '[Lokasi]',
+                'event_date' => $date, 'client_id' => $clients[$i % 3]->id, 'location' => $places[$i % 4],
                 'services' => $services, 'caption' => $caption, 'story' => $story, 'is_featured' => true,
             ]);
 
@@ -130,24 +132,54 @@ class DemoSeeder extends Seeder
         }
     }
 
-    /** Foto contoh: gradasi warna folder, tiap foto sedikit berbeda. */
+    /** Foto contoh: ilustrasi panggung buatan kode, tiap foto berbeda. Ganti dengan foto asli acara. */
     private function placeholder(string $color, int $n): UploadedFile
     {
+        mt_srand(crc32($color.$n));
         [$from, $to] = self::GRADIENTS[$color];
-        $width = 1200;
-        $height = 800;
+        $width = 1600;
+        $height = 1200;
         $image = imagecreatetruecolor($width, $height);
+        imagealphablending($image, true);
 
-        for ($y = 0; $y < $height; $y += 4) {
+        // Latar: dari warna acara ke gelap.
+        for ($y = 0; $y < $height; $y += 3) {
             $k = $y / $height;
-            $line = imagecolorallocate($image, ...array_map(fn ($a, $b) => (int) ($a + ($b - $a) * $k), $from, $to));
-            imagefilledrectangle($image, 0, $y, $width, $y + 3, $line);
+            $line = imagecolorallocate($image, ...array_map(fn ($a, $b) => (int) ($a * (1 - $k) * 0.7 + $b * $k * 0.5), $from, $to));
+            imagefilledrectangle($image, 0, $y, $width, $y + 2, $line);
         }
-        $spot = imagecolorallocatealpha($image, 255, 255, 255, 105);
-        imagefilledellipse($image, 180 + $n * 170, 240 + ($n % 3) * 110, 340, 340, $spot);
+
+        // Layar LED di tengah panggung.
+        $screenW = mt_rand(520, 820);
+        $screenX = (int) (($width - $screenW) / 2) + mt_rand(-140, 140);
+        $screen = imagecolorallocatealpha($image, min(255, $from[0] + 40), min(255, $from[1] + 40), min(255, $from[2] + 40), 70);
+        imagefilledrectangle($image, $screenX, 330, $screenX + $screenW, 760, $screen);
+
+        // Lampu sorot dari rangka atas.
+        $truss = imagecolorallocate($image, 18, 18, 20);
+        imagefilledrectangle($image, 0, 118, $width, 150, $truss);
+        for ($i = 0, $beams = mt_rand(4, 7); $i < $beams; $i++) {
+            $x = (int) (($i + 0.5) * $width / $beams) + mt_rand(-60, 60);
+            $spread = mt_rand(120, 240);
+            $lean = mt_rand(-420, 420);
+            $beam = imagecolorallocatealpha($image, min(255, 180 + $from[0] / 4), min(255, 170 + $from[1] / 4), min(255, 170 + $from[2] / 4), mt_rand(92, 108));
+            imagefilledpolygon($image, [$x, 150, $x + $lean - $spread, 1000, $x + $lean + $spread, 1000], $beam);
+            imagefilledellipse($image, $x, 158, 34, 34, imagecolorallocate($image, 255, 245, 225));
+        }
+
+        // Lantai panggung dan penonton.
+        $floor = imagecolorallocatealpha($image, 8, 8, 10, 30);
+        imagefilledrectangle($image, 0, 860, $width, $height, $floor);
+        $crowd = imagecolorallocate($image, 6, 6, 8);
+        for ($x = -20; $x < $width; $x += mt_rand(38, 64)) {
+            $top = 1010 + mt_rand(-34, 40);
+            imagefilledellipse($image, $x, $top, 58, 66, $crowd);
+            imagefilledrectangle($image, $x - 44, $top + 28, $x + 44, $height, $crowd);
+        }
 
         $path = tempnam(sys_get_temp_dir(), 'fzm');
         imagepng($image, $path);
+        imagedestroy($image);
 
         return new UploadedFile($path, "demo-{$n}.png", 'image/png', null, true);
     }
