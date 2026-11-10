@@ -29,3 +29,7 @@ Thumbs.db
 /.superpowers
 /storage/app/public/portfolios
 /public/.user.ini
+
+.env
+.env.*
+!.env.example
