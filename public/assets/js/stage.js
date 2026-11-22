@@ -1,89 +1,94 @@
 /* =========================================================
    FZM Production — stage.js (beranda)
-   Tumpukan foto. Foto tampil satu per satu, lalu berkala foto
-   paling depan bergeser perlahan dan masuk ke belakang tumpukan.
-   Klik foto membuka tampilan besar (ditangani site.js).
+   Etalase proyek pilihan: satu foto besar dengan keterangan
+   proyek, berganti otomatis; thumbnail bernomor untuk memilih.
+   Berhenti saat kursor/fokus di etalase atau tab tersembunyi.
    ========================================================= */
 (function () {
   'use strict';
-  var deck = document.getElementById('deck');
-  if (!deck) return;
-  var cards = Array.prototype.slice.call(deck.querySelectorAll('.deck-card'));
-  var count = document.getElementById('cornerPill');
+  var root = document.getElementById('showcase');
+  if (!root) return;
+  var $ = function (s) { return root.querySelector(s); };
+  var slides = Array.prototype.slice.call(root.querySelectorAll('.sc-slide'));
+  var thumbs = Array.prototype.slice.call(root.querySelectorAll('.sc-thumb'));
+  var caption = $('.sc-caption');
+  var corner = document.getElementById('cornerPill');
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var n = cards.length;
-  var VISIBLE = 4, INTERVAL = 4800, SLIDE_OUT = 820;
-  var front = 0, paused = false;
-  if (!n) return;
+  var n = slides.length, cur = 0, paused = false, timer = null;
+  var INTERVAL = 5600;
+  if (n < 2 || !caption) return;
+  root.style.setProperty('--sc-dur', INTERVAL + 'ms');
 
-  function slotOf(i) { return (i - front + n) % n; }
+  var pad = function (v) { return (v < 10 ? '0' : '') + v; };
+  var set = function (sel, text) { var el = $(sel); if (el) el.textContent = text; };
 
-  function place(card, slot, shown) {
-    var depth = Math.min(slot, VISIBLE);
-    card.style.transform = 'translate(' + depth * 3 + '%,' + -depth * 6 + '%) scale(' + (1 - depth * 0.07) + ')';
-    card.style.opacity = shown ? String(1 - depth * 0.14) : '0';
-    card.style.zIndex = String(50 - slot);
-    card.style.pointerEvents = shown ? '' : 'none';
-    if (card.tagName === 'A') card.tabIndex = slot === 0 ? 0 : -1;
-  }
+  function show(i) {
+    if (i === cur) return;
+    var prev = slides[cur], next = slides[i];
+    prev.classList.remove('is-active'); prev.setAttribute('aria-hidden', 'true'); prev.tabIndex = -1;
+    next.classList.add('is-active'); next.removeAttribute('aria-hidden'); next.removeAttribute('tabindex');
+    thumbs.forEach(function (t, k) { t.setAttribute('aria-selected', String(k === i)); });
+    cur = i;
 
-  function render() {
-    cards.forEach(function (card, i) {
-      var slot = slotOf(i);
-      place(card, slot, slot < VISIBLE);
-    });
-    if (count) {
-      var pad = function (v) { return (v < 10 ? '0' : '') + v; };
-      count.textContent = pad(front + 1) + ' — ' + pad(n);
-    }
-  }
-
-  /* Foto depan meluncur perlahan ke samping, lalu turun ke belakang tumpukan. */
-  function step() {
-    if (n < 2) return;
-    var leaving = cards[front];
-    front = (front + 1) % n;
-    cards.forEach(function (card, i) {
-      if (card !== leaving) place(card, slotOf(i), slotOf(i) < VISIBLE);
-    });
-    if (count) {
-      count.textContent = (front < 9 ? '0' : '') + (front + 1) + ' — ' + (n < 10 ? '0' : '') + n;
-    }
-    leaving.style.zIndex = '60';
-    leaving.style.pointerEvents = 'none';
-    leaving.classList.add('is-leaving');
-    leaving.style.transform = 'translate(-22%,3%) rotate(-1.5deg) scale(.98)';
+    var d = next.dataset;
+    caption.classList.add('is-swapping');
     setTimeout(function () {
-      var slot = slotOf(cards.indexOf(leaving));
-      leaving.classList.remove('is-leaving');
-      place(leaving, slot, slot < VISIBLE);
-      leaving.style.zIndex = '1';
-    }, SLIDE_OUT);
+      set('.sc-no', '(' + d.no + ')');
+      set('.sc-cat', d.category || '');
+      set('.sc-loc', d.location ? ' · ' + d.location : '');
+      set('.sc-title', d.title || '');
+      set('.sc-client', d.client || '');
+      set('.sc-date', d.date ? ' — ' + d.date : '');
+      caption.classList.remove('is-swapping');
+    }, reduce ? 0 : 260);
+    if (corner) corner.textContent = pad(i + 1) + ' — ' + pad(n);
+    restart();
   }
 
-  function intro() {
-    render();
+  /* Bilah kemajuan di thumbnail aktif dijalankan ulang tiap ganti. */
+  function restart() {
+    clearTimeout(timer);
+    root.classList.remove('is-running');
+    void root.offsetWidth;
     if (reduce) return;
-    /* Tampil satu per satu, dari yang paling belakang. */
-    var order = cards.map(function (_, i) { return i; })
-      .filter(function (i) { return slotOf(i) < VISIBLE; })
-      .sort(function (a, b) { return slotOf(b) - slotOf(a); });
-    cards.forEach(function (card) { card.style.opacity = '0'; });
-    order.forEach(function (i, k) {
-      setTimeout(function () { place(cards[i], slotOf(i), true); }, 200 + k * 340);
-    });
-    setTimeout(function () {
-      setInterval(function () {
-        var viewerOpen = document.body.classList.contains('no-scroll');
-        if (!paused && !viewerOpen && !document.hidden) step();
-      }, INTERVAL);
-    }, 200 + order.length * 340);
+    root.classList.add('is-running');
+    timer = setTimeout(tick, INTERVAL);
+  }
+  function tick() {
+    if (paused || document.hidden) { timer = setTimeout(tick, 600); return; }
+    show((cur + 1) % n);
+  }
+  function pause(on) {
+    paused = on;
+    root.classList.toggle('is-paused', on);
   }
 
-  deck.addEventListener('pointerenter', function () { paused = true; });
-  deck.addEventListener('pointerleave', function () { paused = false; });
-  deck.addEventListener('focusin', function () { paused = true; });
-  deck.addEventListener('focusout', function () { paused = false; });
+  thumbs.forEach(function (t) {
+    t.addEventListener('click', function () { show(+t.getAttribute('data-i')); });
+    t.addEventListener('keydown', function (e) {
+      var k = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!k) return;
+      e.preventDefault();
+      var to = (cur + k + n) % n;
+      show(to);
+      thumbs[to].focus();
+    });
+  });
 
-  intro();
+  /* Geser di layar sentuh */
+  var x0 = null;
+  var frame = $('.sc-frame');
+  frame.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  frame.addEventListener('touchend', function (e) {
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 40) show((cur + (dx < 0 ? 1 : -1) + n) % n);
+  });
+
+  root.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') pause(true); });
+  root.addEventListener('pointerleave', function () { pause(false); });
+  root.addEventListener('focusin', function () { pause(true); });
+  root.addEventListener('focusout', function (e) { if (!root.contains(e.relatedTarget)) pause(false); });
+
+  restart();
 })();

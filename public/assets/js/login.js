@@ -37,12 +37,5 @@
     pw.focus();
   }
 
-  // Sorotan cursor di panel visual
-  var art = $('#authArt');
-  art.addEventListener('pointermove', function (e) {
-    var r = art.getBoundingClientRect();
-    art.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-    art.style.setProperty('--my', (e.clientY - r.top) + 'px');
-  });
   document.querySelectorAll('[data-year]').forEach(function (y) { y.textContent = new Date().getFullYear(); });
 })();

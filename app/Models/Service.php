@@ -30,7 +30,6 @@ class Service extends Model
         return $this->pricing_type === 'tier';
     }
 
-    /** Teks harga ringkas untuk daftar layanan, contoh "Rp3 – 10 jt" atau "Rp400 rb". */
     public function priceLabel(): string
     {
         if (! $this->isTier()) {
@@ -52,7 +51,6 @@ class Service extends Model
         return 'Rp'.self::short($min).' – '.self::short($max);
     }
 
-    /** Keterangan harga kecil, contoh "4 paket" atau "per m²". */
     public function priceNote(): string
     {
         if (! $this->isTier()) {

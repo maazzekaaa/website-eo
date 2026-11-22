@@ -85,7 +85,7 @@
           </div>
         @endunless
         <div class="footer-mark" aria-hidden="true">FZM</div>
-        <div class="footer-bottom"><span class="meta">© <span data-year>{{ date('Y') }}</span> {{ setting('company_name') }}</span><a class="meta" href="{{ route('admin.login') }}" style="text-decoration:none">Masuk admin ↗</a></div>
+        <div class="footer-bottom"><span class="meta">© <span data-year>{{ date('Y') }}</span> {{ setting('company_name') }}</span><span class="meta">Event organizer &amp; produksi panggung</span></div>
       </div>
     </footer>
   @endunless

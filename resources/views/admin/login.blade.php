@@ -17,7 +17,6 @@
 <body>
   <div class="auth">
     <aside class="auth-art" id="authArt" aria-hidden="true">
-      <span class="beam beam--1"></span><span class="beam beam--3"></span>
       <a class="brand" href="{{ route('home') }}" tabindex="-1"><span class="brand-mark">FZ</span><span class="brand-name">FZM Production</span></a>
       <div>
         <span class="meta">(Admin) Panel pengelola</span>

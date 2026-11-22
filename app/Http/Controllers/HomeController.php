@@ -11,50 +11,52 @@ use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
-    private const MAX_PRINTS = 11;
+    private const MAX_SLIDES = 6;
 
     public function __invoke(): View
     {
         return view('site.home', [
-            'prints' => $this->prints(),
+            'slides' => $this->slides(),
+            'stats' => [
+                'events' => Portfolio::count(),
+                'clients' => Client::count(),
+                'categories' => Portfolio::query()->distinct()->count('category'),
+            ],
             'services' => Service::active()->with('options')->orderBy('sort_order')->get(),
-            'clients' => Client::withCount('portfolios')->orderByDesc('portfolios_count')->limit(6)->get(),
+            'clients' => Client::withCount('portfolios')->orderByDesc('portfolios_count')->limit(12)->get(),
         ]);
     }
 
-    /** Foto di tumpukan beranda: gambar hero dari pengaturan, lalu foto portofolio unggulan. */
-    private function prints(): Collection
+    /** Proyek di etalase beranda: gambar hero dari pengaturan (jika ada), lalu satu sampul per portofolio unggulan. */
+    private function slides(): Collection
     {
-        $prints = Portfolio::with(['images', 'client'])->where('is_featured', true)->latest('event_date')->get()
-            ->flatMap(fn (Portfolio $portfolio) => $portfolio->images->take(2)->values()->map(fn ($image, $i) => [
-                'url' => $image->url(),
+        $slides = Portfolio::with(['images', 'client'])->where('is_featured', true)->latest('event_date')->get()
+            ->filter(fn (Portfolio $portfolio) => $portfolio->images->isNotEmpty())
+            ->map(fn (Portfolio $portfolio) => [
+                'url' => $portfolio->images->first()->url(),
                 'title' => $portfolio->title,
                 'link' => route('portofolio.show', $portfolio),
-                'order' => $i,
-                'index' => $i,
-                'client' => $portfolio->client?->name ?? 'Klien Pribadi',
+                'client' => $portfolio->client?->name ?? 'Klien pribadi',
                 'category' => $portfolio->category,
                 'location' => $portfolio->location,
                 'date' => $portfolio->event_date?->translatedFormat('j F Y'),
-                'photos' => $portfolio->images->map(fn ($photo) => $photo->url())->values()->all(),
-            ]))
-            ->sortBy('order')->values();    // foto pertama tiap acara dulu agar tampilannya beragam
+                'photos' => $portfolio->images->count(),
+            ])
+            ->values();
 
         if (setting('hero_image')) {
-            $prints->prepend([
+            $slides->prepend([
                 'url' => Storage::disk('public')->url(setting('hero_image')),
                 'title' => (string) setting('company_name'),
                 'link' => route('portofolio.index'),
-                'order' => -1,
-                'index' => 0,
                 'client' => null,
-                'category' => null,
+                'category' => 'Portofolio',
                 'location' => null,
                 'date' => null,
-                'photos' => [Storage::disk('public')->url(setting('hero_image'))],
+                'photos' => null,
             ]);
         }
 
-        return $prints->take(self::MAX_PRINTS);
+        return $slides->take(self::MAX_SLIDES);
     }
 }

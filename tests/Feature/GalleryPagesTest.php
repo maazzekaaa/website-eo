@@ -45,14 +45,14 @@ class GalleryPagesTest extends TestCase
         $page->assertDontSee('href="'.route('tentang').'" aria-current="page"', false);
     }
 
-    public function test_beranda_menggantung_foto_portofolio_unggulan(): void
+    public function test_beranda_menampilkan_etalase_portofolio_unggulan(): void
     {
         $this->portfolio();
         $this->portfolio(['title' => 'Arsip Lama', 'slug' => 'arsip-lama', 'is_featured' => false]);
 
         $page = $this->get('/')->assertOk();
 
-        $page->assertSee('class="deck-card"', false);
+        $page->assertSee('class="sc-slide is-active"', false);
         $page->assertSee('portfolios/konser-kampus-1.webp', false);
         $page->assertSee('href="'.route('portofolio.show', 'konser-kampus').'"', false);
         $page->assertDontSee('arsip-lama-1.webp', false);
@@ -80,7 +80,7 @@ class GalleryPagesTest extends TestCase
 
     public function test_beranda_tanpa_foto_tetap_tampil_dengan_placeholder(): void
     {
-        $this->get('/')->assertOk()->assertSee('deck-card is-placeholder', false)->assertSee('00 — 00');
+        $this->get('/')->assertOk()->assertSee('sc-slide is-active is-placeholder', false)->assertSee('00 — 00');
     }
 
     public function test_klien_berupa_tabel_dengan_pratinjau(): void
@@ -155,13 +155,15 @@ class GalleryPagesTest extends TestCase
         $this->assertStringNotContainsString('Anton', file_get_contents(public_path('assets/css/site.css')));
     }
 
-    public function test_foto_beranda_bisa_diklik_dan_membawa_data_galeri(): void
+    public function test_etalase_beranda_membawa_data_proyek_dan_statistik(): void
     {
         $this->portfolio();
 
         $page = $this->get('/')->assertOk();
 
-        $page->assertSee('id="lightbox"', false);
+        $page->assertSee('class="stage-stats"', false);
+        $page->assertSee('<dt class="meta">Acara ditangani</dt><dd>01</dd>', false);
+        $page->assertDontSee('Masuk admin', false);
         $page->assertSee('data-client="Mitra Satu"', false);
         $page->assertSee('data-category="Concert"', false);
         $page->assertSee('data-location="Malang"', false);

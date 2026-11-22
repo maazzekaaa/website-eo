@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /** Data awal: admin, pengaturan, layanan & harga PRD FR-3. Tanpa data demo. */
+
     public function run(): void
     {
         Admin::updateOrCreate(['email' => 'admin@fzm.id'], ['name' => 'Admin FZM', 'password' => 'admin123']);

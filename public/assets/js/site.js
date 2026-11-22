@@ -5,7 +5,7 @@
      selalu tampil saat di-scroll
    - Menu ponsel, marquee, parallax hero, LED panggung
    - Filter portofolio + tampilan foto besar
-   - Sorotan cursor pada CTA, tombol WhatsApp melayang
+   - Tombol WhatsApp melayang
    ========================================================= */
 (function () {
   'use strict';
@@ -227,15 +227,6 @@
       sx = null;
     });
   }
-
-  /* ---------- Sorotan cursor pada CTA ---------- */
-  $$('.cta').forEach(function (c) {
-    c.addEventListener('pointermove', function (e) {
-      var r = c.getBoundingClientRect();
-      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
-    });
-  });
 
   /* ---------- WhatsApp melayang ---------- */
   $$('[data-wa]').forEach(function (a) {

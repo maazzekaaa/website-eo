@@ -38,6 +38,7 @@
   <div class="scrim" aria-hidden="true"></div>
 
   <div class="main">
+    <div class="nav-progress" aria-hidden="true"></div>
     <header class="topbar">
       <button class="icon-btn topbar-menu" type="button" aria-label="Buka menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
       <form method="get" action="{{ route('admin.bookings.index') }}" style="display:contents">
@@ -87,6 +88,7 @@
 @endphp
 <script id="flashData" type="application/json">@json($flash)</script>
 <script src="{{ asset('assets/js/admin.js') }}"></script>
-@stack('scripts')
+{{-- Skrip khusus halaman; ditukar oleh navigasi tanpa muat ulang di admin.js --}}
+<div id="pageScripts" hidden>@stack('scripts')</div>
 </body>
 </html>

@@ -19,10 +19,8 @@ class Setting extends Model
         static::saved(fn () => Cache::forget('settings.current'));
     }
 
-    /** Satu-satunya baris pengaturan, disimpan di cache. */
     public static function current(): self
     {
-        // Simpan atribut mentah, bukan objek: Laravel 13 tidak meng-unserialize objek dari cache.
         $attributes = Cache::rememberForever('settings.current', fn () => static::query()->first()?->getAttributes() ?? []);
 
         return $attributes === []

@@ -43,7 +43,7 @@ database/seeders/     DatabaseSeeder (data awal), DemoSeeder (data contoh)
 - Font: Inter (teks), Inter Tight (judul), JetBrains Mono (label kecil `.meta`).
 - Gaya editorial bersih (terinspirasi template Framer "Farline"): judul besar, label monospace, tautan `↗`, footer dengan wordmark besar.
 - Animasi: easing `--ease: cubic-bezier(.22,1,.36,1)`; `data-reveal` + `--d` untuk muncul saat scroll; `.split > .line > span` untuk judul per baris. Selalu hormati `prefers-reduced-motion`.
-- Beranda, klien, dan portofolio memakai judul besar `.poster` (font Inter Tight seperti halaman lain), navbar kapsul bening di bawah (`.nav`). Navbar selalu tampil saat di-scroll. Beranda: tumpukan foto yang bergeser ke belakang (`stage.js`). Klien: daftar dengan pratinjau foto (`ledger.js`). Portofolio: maksimal 15 foto tersebar acak yang bisa digeser (`portfolio-table.js`).
+- Beranda, klien, dan portofolio memakai judul besar `.poster` (font Inter Tight seperti halaman lain), navbar kapsul bening di bawah (`.nav`). Navbar selalu tampil saat di-scroll. Beranda: etalase proyek pilihan (foto besar + keterangan + thumbnail bernomor, berganti otomatis, `stage.js`), statistik acara/klien/kategori, dan pita logo klien berjalan (`.logo-strip`). Footer publik tidak menautkan login admin (akses lewat `/admin/login`). Admin: pindah menu sidebar tanpa muat ulang (ditangani `admin.js`; skrip halaman di `#pageScripts` dijalankan ulang). Klien: daftar dengan pratinjau foto (`ledger.js`). Portofolio: maksimal 15 foto tersebar acak yang bisa digeser (`portfolio-table.js`).
 - Warna folder portofolio: kelas `folder--red | folder--black | folder--maroon | folder--silver` (kolom `folder_color`).
 - Aksesibilitas: target sentuh ≥ 44px, label form, fokus terlihat, kontras teks ≥ 4.5:1.
 

@@ -121,7 +121,6 @@ return new class extends Migration
             $t->unsignedBigInteger('dp_amount');
             $t->enum('status', ['pending', 'confirmed', 'completed', 'rejected', 'cancelled'])->default('pending')->index();
             $t->enum('payment_status', ['unpaid', 'dp', 'paid'])->default('unpaid')->index();
-            // Pengaman terakhir anti double booking: satu tanggal, satu booking yang mengunci.
             $t->date('confirmed_date')->nullable()->unique()
                 ->storedAs("IF(status IN ('confirmed','completed'), event_date, NULL)");
             $t->timestamp('contacted_at')->nullable();
