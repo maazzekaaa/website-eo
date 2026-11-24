@@ -217,4 +217,29 @@ class AdminCatalogTest extends TestCase
 
         $this->assertNull($portfolio->fresh()->client_id);
     }
+
+    public function test_logo_klien_bisa_diganti_dan_dihapus(): void
+    {
+        $this->post('/admin/clients', ['name' => 'Mitra Logo', 'logo' => UploadedFile::fake()->image('a.png', 300, 120)])->assertRedirect('/admin/clients');
+        $client = Client::where('name', 'Mitra Logo')->firstOrFail();
+        $first = $client->logo;
+        $this->get('/admin/clients')->assertSee(Storage::disk('public')->url($first), false);
+
+        // Ganti logo: berkas lama dihapus
+        $this->put(route('admin.clients.update', $client), ['name' => 'Mitra Logo', 'logo' => UploadedFile::fake()->image('b.png', 300, 120)])->assertRedirect();
+        $second = $client->fresh()->logo;
+        $this->assertNotSame($first, $second);
+        Storage::disk('public')->assertMissing($first);
+
+        // Hapus logo: klien tetap ada, tampil dengan nama saja
+        $this->put(route('admin.clients.update', $client), ['name' => 'Mitra Logo', 'remove_logo' => '1'])->assertRedirect();
+        $this->assertNull($client->fresh()->logo);
+        Storage::disk('public')->assertMissing($second);
+    }
+
+    public function test_menu_admin_punya_klien(): void
+    {
+        $this->get('/admin')->assertSee('data-nav="clients"', false);
+        $this->get('/admin/clients')->assertSee('Belum ada klien');
+    }
 }

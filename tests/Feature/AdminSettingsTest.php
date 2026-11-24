@@ -126,9 +126,9 @@ class AdminSettingsTest extends TestCase
     {
         auth('admin')->logout();
 
-        $this->put('/admin/settings', $this->payload())->assertRedirect('/admin/login');
-        $this->put('/admin/password', [])->assertRedirect('/admin/login');
-        $this->post('/admin/services', [])->assertRedirect('/admin/login');
-        $this->delete('/admin/portfolios/x')->assertRedirect('/admin/login');
+        $this->put('/admin/settings', $this->payload())->assertNotFound();
+        $this->put('/admin/password', [])->assertNotFound();
+        $this->post('/admin/services', [])->assertNotFound();
+        $this->delete('/admin/portfolios/x')->assertNotFound();
     }
 }

@@ -57,13 +57,18 @@ class ClientController extends Controller
             'description' => ['nullable', 'string', 'max:1000'],
             'website' => ['nullable', 'url:http,https', 'max:255'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_logo' => ['nullable', 'boolean'],
         ]);
-        unset($data['logo']);
+        unset($data['logo'], $data['remove_logo']);
 
         if ($request->file('logo')) {
             // Simpan yang baru dulu: bila gagal diolah, logo lama tetap utuh.
             $data['logo'] = $this->images->store($request->file('logo'), 'clients');
             $this->images->delete($client->logo);
+        } elseif ($request->boolean('remove_logo') && $client->logo) {
+            // "Hapus logo": berkas dihapus, klien tampil dengan nama saja
+            $this->images->delete($client->logo);
+            $data['logo'] = null;
         }
 
         return $data;

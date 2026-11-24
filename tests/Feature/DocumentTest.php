@@ -113,7 +113,7 @@ class DocumentTest extends TestCase
         $payment = $this->pay($booking, 1000);
         auth('admin')->logout();
 
-        $this->get(route('admin.bookings.invoice', $booking))->assertRedirect('/admin/login');
-        $this->get(route('admin.payments.receipt', $payment))->assertRedirect('/admin/login');
+        $this->get(route('admin.bookings.invoice', $booking))->assertNotFound();
+        $this->get(route('admin.payments.receipt', $payment))->assertNotFound();
     }
 }

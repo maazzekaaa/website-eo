@@ -12,9 +12,9 @@
     <div class="container">
       <form id="orderForm" method="post" action="{{ route('pesan.store') }}" novalidate>
         @csrf
-        <x-page-head eyebrow="Tanpa akun · DP 50%" size="md">
+        <x-page-head eyebrow="Tanpa akun · DP 50%" :dot="false" size="md">
           Susun acara <x-accent>Anda.</x-accent>
-          <x-slot:lead><strong class="accent">Tiga langkah</strong> sederhana: pilih layanan, kunci tanggal yang masih kosong, lalu isi data. Tanpa akun dan tanpa formulir panjang. Rincian pesanan langsung terkirim ke WhatsApp tim kami.</x-slot:lead>
+          <x-slot:lead><strong class="accent">Tiga langkah</strong> sederhana: <strong class="step-word">pilih layanan</strong>, <strong class="step-word">kunci tanggal</strong> yang masih kosong, lalu <strong class="step-word">isi data</strong>. Tanpa akun dan tanpa formulir panjang. Rincian pesanan langsung terkirim ke WhatsApp tim kami.</x-slot:lead>
         </x-page-head>
 
         <div class="order-layout">

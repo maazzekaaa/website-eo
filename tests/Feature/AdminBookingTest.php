@@ -138,7 +138,7 @@ class AdminBookingTest extends TestCase
         $this->get(route('admin.payments.proof', $payment))->assertOk();
 
         auth('admin')->logout();
-        $this->get(route('admin.payments.proof', $payment))->assertRedirect('/admin/login');
+        $this->get(route('admin.payments.proof', $payment))->assertNotFound();
     }
 
     public function test_bukti_bukan_gambar_ditolak(): void

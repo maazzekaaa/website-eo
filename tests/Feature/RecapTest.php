@@ -21,7 +21,7 @@ class RecapTest extends TestCase
 
     public function test_rekap_butuh_login(): void
     {
-        $this->get(route('admin.recap'))->assertRedirect(route('admin.login'));
+        $this->get(route('admin.recap'))->assertNotFound();
     }
 
     public function test_rekap_bulanan_dan_tahunan_berupa_pdf(): void

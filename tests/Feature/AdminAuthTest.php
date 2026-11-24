@@ -20,9 +20,9 @@ class AdminAuthTest extends TestCase
     }
 
     #[DataProvider('ruteAdmin')]
-    public function test_tamu_dialihkan_ke_login(string $url): void
+    public function test_tamu_mendapat_404(string $url): void
     {
-        $this->get($url)->assertRedirect('/admin/login');
+        $this->get($url)->assertNotFound();
     }
 
     public static function ruteAdmin(): array
@@ -34,8 +34,8 @@ class AdminAuthTest extends TestCase
     {
         $booking = $this->makeBooking();
 
-        $this->post("/admin/bookings/{$booking->id}/confirm")->assertRedirect('/admin/login');
-        $this->post("/admin/bookings/{$booking->id}/payments", ['amount' => 1])->assertRedirect('/admin/login');
+        $this->post("/admin/bookings/{$booking->id}/confirm")->assertNotFound();
+        $this->post("/admin/bookings/{$booking->id}/payments", ['amount' => 1])->assertNotFound();
     }
 
     public function test_login_benar(): void

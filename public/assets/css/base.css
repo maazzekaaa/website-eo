@@ -233,6 +233,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 /* Label kecil di atas judul: merah dengan titik, tanpa nomor */
 .eyebrow { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--red-ink); }
 .eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.eyebrow--plain::before { content: none; }
 /* Angka, harga, dan frasa kunci */
 .accent { color: var(--red-ink); }
 strong.accent, b.accent { font-weight: 700; }

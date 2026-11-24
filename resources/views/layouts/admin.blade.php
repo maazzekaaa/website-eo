@@ -65,7 +65,8 @@
       <a href="{{ route('admin.dashboard') }}" data-nav="dashboard" @if (request()->routeIs('admin.dashboard')) aria-current="page" @endif>Dashboard</a>
       <a href="{{ route('admin.bookings.index') }}" data-nav="bookings" @if (request()->routeIs('admin.bookings.*')) aria-current="page" @endif><span>Pemesanan</span>@if ($pendingCount)<span class="nav-count">{{ $pendingCount }}</span>@endif</a>
       <a href="{{ route('admin.services.index') }}" data-nav="services" @if (request()->routeIs('admin.services.*')) aria-current="page" @endif>Layanan</a>
-      <a href="{{ route('admin.portfolios.index') }}" data-nav="portfolios" @if (request()->routeIs('admin.portfolios.*', 'admin.clients.*')) aria-current="page" @endif>Portofolio</a>
+      <a href="{{ route('admin.portfolios.index') }}" data-nav="portfolios" @if (request()->routeIs('admin.portfolios.*')) aria-current="page" @endif>Portofolio</a>
+      <a href="{{ route('admin.clients.index') }}" data-nav="clients" @if (request()->routeIs('admin.clients.*')) aria-current="page" @endif>Klien</a>
       <a href="{{ route('admin.settings.edit') }}" data-nav="settings" @if (request()->routeIs('admin.settings.*')) aria-current="page" @endif>Pengaturan</a>
       <a href="#" class="admin-nav-out" data-logout>Keluar</a>
     </nav>
