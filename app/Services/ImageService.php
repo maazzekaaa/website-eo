@@ -55,6 +55,13 @@ class ImageService
             return $image;
         }
         $resized = imagescale($image, $width, -1, IMG_BICUBIC);
+        if (! $resized instanceof GdImage) {
+            // Sebagian build GD tidak mendukung mode BICUBIC dan mengembalikan false: ubah ukuran manual.
+            $height = max(1, (int) round(imagesy($image) * $width / imagesx($image)));
+            $resized = imagecreatetruecolor($width, $height);
+            imagealphablending($resized, false);
+            imagecopyresampled($resized, $image, 0, 0, 0, 0, $width, $height, imagesx($image), imagesy($image));
+        }
         imagesavealpha($resized, true);
 
         return $resized;

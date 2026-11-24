@@ -5,7 +5,7 @@ Bahasa kerja: **Indonesia** (UI, komentar kode, pesan commit).
 
 ## Ringkasan
 Website resmi EO **FZM Production Mediatama** (tugas Kelompok 12: Gigih, Dhimas).
-- Portofolio acara berbentuk folder ala macOS + daftar klien/mitra.
+- Portofolio berupa 4 kartu acara (Pernikahan & Korporat) + strip logo klien/mitra di beranda.
 - Katalog layanan & harga, pemesanan **tanpa login** dengan keranjang multi-layanan dan cek tanggal → diteruskan ke WhatsApp.
 - Panel admin: login, dashboard pendapatan, kelola booking & pembayaran (DP/pelunasan), invoice & kuitansi.
 
@@ -19,7 +19,7 @@ Dokumen lengkap: `docs/PRD.md` (v0.2) dan `docs/ALUR-PROGRAM.md` (v0.2). Panduan
 ```
 app/Services/         logika bisnis: harga, booking, pembayaran, nomor dokumen, pendapatan, WhatsApp, gambar
 app/Http/Controllers/ publik, dan Admin/ untuk panel
-resources/views/      site/, admin/, layouts/, partials/
+resources/views/      site/ (halaman), components/ (komponen Blade: site/nav, site/footer, home/hero, home/showcase, page-head, section-head, accent, cta, service-list, client-strip, portfolio/event-card, portfolio/lightbox …), admin/, layouts/
 public/assets/        CSS dan JS dari prototipe, tanpa build tool
 database/seeders/     DatabaseSeeder (data awal), DemoSeeder (data contoh)
 ```
@@ -39,13 +39,23 @@ database/seeders/     DatabaseSeeder (data awal), DemoSeeder (data contoh)
 - Kode booking `FZM-YYYYMMDD-XXXX`. Nomor WA dinormalisasi ke `62…`, pesan lewat `https://wa.me/<nomor>?text=…`.
 
 ## Desain
-- Warna: putih, hitam, merah (`--red #E11D2E`, teks merah di atas putih pakai `--red-ink #C8102E`). Gradasi di `base.css`: `--g-red`, `--g-dark`, `--g-ember`, `--g-blush`.
-- Font: Inter (teks), Inter Tight (judul), JetBrains Mono (label kecil `.meta`).
-- Gaya editorial bersih (terinspirasi template Framer "Farline"): judul besar, label monospace, tautan `↗`, footer dengan wordmark besar.
-- Animasi: easing `--ease: cubic-bezier(.22,1,.36,1)`; `data-reveal` + `--d` untuk muncul saat scroll; `.split > .line > span` untuk judul per baris. Selalu hormati `prefers-reduced-motion`.
-- Beranda, klien, dan portofolio memakai judul besar `.poster` (font Inter Tight seperti halaman lain), navbar kapsul bening di bawah (`.nav`). Navbar selalu tampil saat di-scroll. Beranda: etalase proyek pilihan (foto besar + keterangan + thumbnail bernomor, berganti otomatis, `stage.js`), statistik acara/klien/kategori, dan pita logo klien berjalan (`.logo-strip`). Footer publik tidak menautkan login admin (akses lewat `/admin/login`). Admin: pindah menu sidebar tanpa muat ulang (ditangani `admin.js`; skrip halaman di `#pageScripts` dijalankan ulang). Klien: daftar dengan pratinjau foto (`ledger.js`). Portofolio: maksimal 15 foto tersebar acak yang bisa digeser (`portfolio-table.js`).
-- Warna folder portofolio: kelas `folder--red | folder--black | folder--maroon | folder--silver` (kolom `folder_color`).
-- Aksesibilitas: target sentuh ≥ 44px, label form, fokus terlihat, kontras teks ≥ 4.5:1.
+Panduan lengkap: `docs/DESIGN.md` (kanvas: https://claude.ai/artifact/Tbtxyek7AgwfJCPEMePNxw).
+- Flat color, tanpa pola. Tanpa gradasi (termasuk footer). Pengecualian: material kaca buram (navbar publik, navbar admin, menu tarik-turun, notifikasi).
+- Warna: latar `--bg #FAFAFA`, teks `--ink #101010`, aksen `--red #C2272D` (hanya aksen & aksi utama), `--muted #5F5F5F`, garis `--hairline #E0E0E0`, kartu `--surface #FFF`, tanggal terisi `--taken #EAD0D2`.
+- Font: **Open Sauce One** (lokal di `public/assets/fonts`, SIL OFL) untuk semua teks; **Instrument Serif** italic merah untuk kata aksen hero (`.serif`).
+- Radius: tombol & navbar kapsul, kartu 24–32px, blok CTA 40px. Lebar konten 1360px (publik) / 1100px (admin). Jarak seksi 160px.
+- Tidak ada label bernomor seperti "(01) Layanan".
+- Publik: pil merek kiri atas, navbar kapsul bawah (Beranda, Layanan, Portofolio, Tentang, Kontak, Pesan). Logo kiri atas polos tanpa kotak dan tanpa animasi. Beranda: hero "Rangkai *Cipta,* Hidupkan *Karya.*" diketik huruf per huruf dengan kursor merah yang langsung hilang setelah selesai (`site.js`); hero setinggi layar agar tidak mepet navbar, teks bawahnya dari pengaturan `hero_title` + `hero_subtitle`, daftar layanan, strip logo klien berjalan tanpa kotak (hanya garis batas), CTA hitam. Footer: tiga kolom + wordmark "FZM PRODUCTION" Inter Tight 700 huruf rapat, flat: FZM hitam, PRODUCTION merah (`cqw`). Portofolio: kategori hanya Pernikahan (`Wedding`) & Korporat (`Corporate`), 4 kartu acara (unggulan lalu terbaru, `PortfolioController::SHOWN`): foto di atas, ringkasan gelap + "Lihat studi kasus"; klik foto membuka galeri berlatar buram yang membesar dari kartu (desktop) atau lembar bawah yang bisa ditarik (ponsel) (`portfolio.js`). Pesan: grid kartu layanan dengan paket sebagai daftar iOS, kalender & data berdampingan sama tinggi, angka tanpa animasi menghitung. Halaman klien publik dihapus (`/klien` dialihkan ke `/#klien`).
+- Admin: navbar putih menempel di dasar (Dashboard, Pemesanan, Layanan, Portofolio, Pengaturan, Keluar); kelola klien/logo lewat tombol di halaman Portofolio. Pindah menu tanpa muat ulang (`admin.js`, skrip halaman di `#pageScripts`). Grafik batang hitam, periode berjalan merah; donut hitam/merah/abu.
+- **Web satu halaman (one-scroll)**: beranda memuat semua bagian — hero → `#layanan` → `#portofolio` (grid foto bento, klik foto = galeri `portfolio.js`, judul = studi kasus; `HomeController::PROJECTS`) → `#klien` → CTA → `#tentang` → `#kontak` (formulir `kontak.js`). `/layanan`, `/portofolio`, `/tentang`, `/kontak` dialihkan 301 ke bagiannya. Halaman terpisah tinggal: detail layanan, studi kasus portofolio, `/pesan`, `/cari`. Navbar menggulir ke `#bagian`; pil hitam mengikuti bagian yang terlihat (scrollspy di `site.js`).
+- Halaman publik disusun dari komponen Blade (`resources/views/components`), mis. `home/hero`, `home/showcase`, `home/about`, `home/contact`, `site/nav`, `site/footer`, `wa-link` (nomor WA yang bisa diketuk).
+- Merah = aksen poin penting: label `.eyebrow` bertitik merah, kata aksen `<x-accent>` (serif merah), harga, nama klien, DP/total, nomor WA, `.accent` untuk frasa kunci.
+- Konten publik muncul **mengikuti posisi scroll** (bukan animasi berdurasi): `site.js` mengisi `--p` 0→1 per elemen tiap frame, `base.css` (`.scroll-reveal`) memetakannya ke pudar + naik + blur, jadi tidak tertinggal saat digulir cepat dan berbalik saat digulir ke atas. Galeri: pindah foto berupa pudar silang murni (`.pd-ghost`).
+- Motion muncul yang tenang: buram → tajam sambil pudar + naik pelan (`--ease-out`), judul kata per kata dari buram (`data-words`), blur sedang (9px konten, 7px judul, 11px foto). Foto portofolio diam (tanpa zoom/paralaks); hover hanya mengangkat bingkai 6px dengan kurva lembut. Galeri foto bergaya kaca buram (glassmorphism). Tanpa kursor "Lihat", tanpa jumlah proyek klien.
+- Dokumen PDF bermerek (dompdf, gaya `admin/documents/pdf/brand.blade.php`): **rekap pendapatan** `/admin/rekap?periode=YYYY-MM|YYYY` (`RecapController`, `RevenueService::recap`; tombol Unduh rekap mengikuti periode grafik dashboard) dan **invoice** (`pdf/invoice-body.blade.php`, dipakai PDF & pratinjau layar).
+- Admin: daftar booking berlebar tetap saat ganti filter (`table-fixed` + colgroup, dropdown filter 200px, `scrollbar-gutter: stable`).
+- Animasi: perpindahan halaman publik lewat View Transitions (lama memudar+buram, baru naik; fallback di `site.js`); pil hitam navbar meluncur ke menu tujuan sebelum pindah; konten muncul bertingkat saat di-scroll (`data-reveal` + `--d`); pudar singkat `data-reveal`; UX ala Apple/iOS: kurva pegas (`--spring`), tombol mengecil saat ditekan, sorotan meluncur di navbar. Admin: jempol hitam meluncur ke menu aktif, filter status kontrol segmen, sakelar iOS untuk centang, dialog/laci berlatar buram. Selalu hormati `prefers-reduced-motion`.
+- Aksesibilitas: target sentuh ≥ 44px, label form, fokus 3px merah, kontras teks ≥ 4.5:1.
 
 ## Konvensi kode frontend
 - JS vanilla dalam IIFE, tanpa dependensi. Data dari server diletakkan di blok `<script type="application/json">` (`dashData`, `bookingData`) atau `window.FZM_CONFIG` dengan `@json`.

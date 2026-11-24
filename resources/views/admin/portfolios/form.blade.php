@@ -16,8 +16,8 @@
         <div class="field">
           <label for="category">Kategori</label>
           <select class="select input" id="category" name="category">
-            @foreach (\App\Models\Portfolio::CATEGORIES as $category)
-              <option value="{{ $category }}" @selected(old('category', $portfolio->category) === $category)>{{ $category }}</option>
+            @foreach (\App\Models\Portfolio::CATEGORY_LABELS as $category => $label)
+              <option value="{{ $category }}" @selected(old('category', $portfolio->category) === $category)>{{ $label }}</option>
             @endforeach
           </select>
           @include('admin.partials.field-error', ['name' => 'category'])
@@ -48,7 +48,7 @@
       <div class="field"><label for="caption">Keterangan singkat</label><input class="input" id="caption" name="caption" value="{{ old('caption', $portfolio->caption) }}"></div>
       <div class="field"><label for="services">Layanan yang dipakai</label><input class="input" id="services" name="services" value="{{ old('services', $portfolio->services) }}" placeholder="Sound, Lighting, Rigging"></div>
       <div class="field"><label for="story">Cerita acara</label><textarea class="textarea" id="story" name="story">{{ old('story', $portfolio->story) }}</textarea></div>
-      <label class="check-line"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $portfolio->is_featured))> Tampilkan di beranda</label>
+      <label class="check-line"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $portfolio->is_featured))> Unggulan (tampil paling depan di halaman Portofolio)</label>
     </article>
 
     <article class="card form-stack">

@@ -28,7 +28,11 @@ class BookingController extends Controller
             })
             ->latest('id')->paginate(20)->withQueryString();
 
-        return view('admin.bookings.index', ['bookings' => $list, 'q' => $q]);
+        return view('admin.bookings.index', [
+            'bookings' => $list,
+            'q' => $q,
+            'statusCounts' => Booking::query()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status'),
+        ]);
     }
 
     public function show(Booking $booking): View

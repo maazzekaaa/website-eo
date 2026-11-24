@@ -19,7 +19,7 @@
               <td>{{ $service->priceLabel() }}</td>
               <td>@if ($service->badge)<span class="badge badge-dp">{{ ucfirst($service->badge) }}</span>@else — @endif</td>
               <td><span class="badge {{ $service->is_active ? 'badge-paid' : 'badge-pending' }}">{{ $service->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
-              <td><form class="table-actions" method="post" action="{{ route('admin.services.destroy', $service) }}" onsubmit="return confirm('Hapus layanan ini? Booking lama tetap menyimpan salinan harganya.')">@csrf @method('DELETE')<button class="btn btn-sm btn-danger" type="submit">Hapus</button></form></td>
+              <td><div class="table-actions"><a class="btn btn-sm btn-light" href="{{ route('admin.services.edit', $service) }}" aria-label="Edit {{ $service->name }}">Edit</a><form method="post" action="{{ route('admin.services.destroy', $service) }}" onsubmit="return confirm('Hapus layanan ini? Booking lama tetap menyimpan salinan harganya.')">@csrf @method('DELETE')<button class="btn btn-sm btn-danger" type="submit">Hapus</button></form></div></td>
             </tr>
           @empty
             <tr><td colspan="6" class="empty">Belum ada layanan.</td></tr>

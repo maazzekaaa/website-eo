@@ -5,32 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>Masuk — FZM Admin</title>
-  <meta name="theme-color" content="#FFFFFF">
+  <meta name="theme-color" content="#101010">
   <script>document.documentElement.classList.add('js')</script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
-  <link rel="stylesheet" href="{{ asset('assets/css/site.css') }}">
-  <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
+  <link rel="stylesheet" href="{{ asset_v('assets/css/base.css') }}">
+  <link rel="stylesheet" href="{{ asset_v('assets/css/admin.css') }}">
 </head>
 <body>
   <div class="auth">
     <aside class="auth-art" id="authArt" aria-hidden="true">
-      <a class="brand" href="{{ route('home') }}" tabindex="-1"><span class="brand-mark">FZ</span><span class="brand-name">FZM Production</span></a>
+      <a class="brand" href="{{ route('home') }}" tabindex="-1"><span class="brand-mark"><x-logo-mark /></span><span class="brand-name">FZM Admin</span></a>
       <div>
-        <span class="meta">(Admin) Panel pengelola</span>
-        <h2 style="margin-top:16px">Kelola panggung dari satu tempat.</h2>
-        <p>Pesanan, pembayaran, jadwal, dan portofolio — semuanya di sini.</p>
+        <h2>Kelola pesanan dan konten dalam satu tempat.</h2>
+        <p>Pesanan, pembayaran, jadwal, dan portofolio. Khusus pengelola {{ setting('company_name') }}.</p>
       </div>
       <span class="meta">© <span data-year>{{ date('Y') }}</span> FZM Production Mediatama</span>
     </aside>
     <main class="auth-main">
       <form class="auth-card" id="loginForm" method="post" action="{{ route('admin.login.attempt') }}" novalidate>
         @csrf
-        <a class="brand" href="{{ route('home') }}" style="margin-bottom:8px"><span class="brand-mark">FZ</span><span class="brand-name">FZM Admin</span></a>
         <h1>Masuk</h1>
-        <p>Gunakan akun admin yang diberikan pengelola.</p>
+        <p>Gunakan email dan kata sandi admin yang diberikan pengelola.</p>
 
         <div class="auth-alert" id="loginAlert" role="alert" @unless ($errors->any()) hidden @endunless>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
@@ -55,10 +49,10 @@
           <a class="link-arrow" href="mailto:{{ setting('email') }}?subject=Reset%20kata%20sandi%20admin"><span>Lupa kata sandi</span></a>
         </div>
         <button class="btn btn-red btn-lg btn-block" type="submit" id="loginBtn"><span id="loginLabel">Masuk</span> <span class="arrow" aria-hidden="true">→</span></button>
-        <a class="link-arrow" href="{{ route('home') }}" style="align-self:center;font-size:14px;color:var(--muted)"><span>Kembali ke website</span></a>
+        <a class="auth-back" href="{{ route('home') }}">‹ Kembali ke website</a>
       </form>
     </main>
   </div>
-  <script src="{{ asset('assets/js/login.js') }}"></script>
+  <script src="{{ asset_v('assets/js/login.js') }}"></script>
 </body>
 </html>

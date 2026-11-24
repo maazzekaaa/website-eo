@@ -63,5 +63,5 @@
 @endsection
 
 @push('scripts')
-  <script src="{{ asset('assets/js/service-form.js') }}"></script>
+  <script src="{{ asset_v('assets/js/service-form.js') }}"></script>
 @endpush

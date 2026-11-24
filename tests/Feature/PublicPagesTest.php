@@ -24,7 +24,7 @@ class PublicPagesTest extends TestCase
     private function portfolio(array $attributes = []): Portfolio
     {
         return Portfolio::create($attributes + [
-            'title' => 'Konser Kampus', 'slug' => 'konser-kampus', 'category' => 'Concert',
+            'title' => 'Konser Kampus', 'slug' => 'konser-kampus', 'category' => 'Corporate',
             'folder_color' => 'maroon', 'is_featured' => true, 'caption' => 'Sound besar', 'services' => 'Sound, Lighting',
             'client_id' => Client::firstOrCreate(['name' => 'Mitra Satu'])->id,
         ]);
@@ -38,7 +38,7 @@ class PublicPagesTest extends TestCase
 
     public static function halamanUtama(): array
     {
-        return [['/'], ['/pesan'], ['/kontak'], ['/layanan'], ['/layanan/sound'], ['/portofolio'], ['/klien'], ['/tentang'], ['/cari']];
+        return [['/'], ['/pesan'], ['/layanan/sound'], ['/cari']];
     }
 
     public function test_beranda_dari_database(): void
@@ -53,12 +53,11 @@ class PublicPagesTest extends TestCase
             ->assertSee('Judul dari pengaturan');
     }
 
-    public function test_detail_portofolio_dan_klien(): void
+    public function test_detail_portofolio_menampilkan_klien(): void
     {
         $portfolio = $this->portfolio();
 
         $this->get('/portofolio/'.$portfolio->slug)->assertOk()->assertSee('Konser Kampus')->assertSee('Mitra Satu');
-        $this->get('/klien/'.$portfolio->client_id)->assertOk()->assertSee('Mitra Satu')->assertSee('Konser Kampus');
     }
 
     public function test_layanan_nonaktif_404_dan_tidak_terdaftar(): void
@@ -66,7 +65,7 @@ class PublicPagesTest extends TestCase
         Service::where('slug', 'rigging')->update(['is_active' => false]);
 
         $this->get('/layanan/rigging')->assertNotFound();
-        $this->get('/layanan')->assertDontSee('Rigging');
+        $this->get('/')->assertDontSee('Rigging');
         $this->get('/')->assertDontSee('Struktur truss');
     }
 
@@ -74,7 +73,7 @@ class PublicPagesTest extends TestCase
     {
         Service::where('slug', 'rigging')->update(['badge' => 'promo']);
 
-        $this->get('/layanan')->assertSee('(Promo)');
+        $this->get('/')->assertSee('(Promo)');
     }
 
     public function test_detail_layanan_punya_tombol_wa_dan_pesan(): void
@@ -113,16 +112,15 @@ class PublicPagesTest extends TestCase
 
     public function test_meta_per_halaman(): void
     {
-        $this->get('/layanan')->assertSee('<title>Layanan &amp; Harga — FZM Production Mediatama</title>', false)
-            ->assertSee('property="og:title" content="Layanan &amp; Harga', false);
-        $this->get('/kontak')->assertSee('<title>Kontak — FZM Production Mediatama</title>', false);
+        $this->get('/layanan/sound')->assertSee('<title>Sound System — FZM Production Mediatama</title>', false)
+            ->assertSee('property="og:title" content="Sound System', false);
     }
 
     public function test_peta_hanya_tampil_jika_ada(): void
     {
-        $this->get('/kontak')->assertDontSee('<iframe', false);
+        $this->get('/')->assertDontSee('<iframe', false);
 
         Setting::current()->update(['map_embed' => 'https://www.google.com/maps/embed?pb=abc']);
-        $this->get('/kontak')->assertSee('<iframe', false)->assertSee('https://www.google.com/maps/embed?pb=abc', false);
+        $this->get('/')->assertSee('<iframe', false)->assertSee('https://www.google.com/maps/embed?pb=abc', false);
     }
 }

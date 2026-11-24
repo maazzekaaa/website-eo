@@ -40,6 +40,17 @@ class AdminCatalogTest extends TestCase
         $this->get(route('admin.services.edit', Service::first()))->assertOk();
     }
 
+    public function test_daftar_katalog_punya_tombol_edit(): void
+    {
+        $client = Client::create(['name' => 'Mitra Edit']);
+        $portfolio = Portfolio::create(['title' => 'Acara Edit', 'slug' => 'acara-edit', 'category' => 'Wedding', 'folder_color' => 'red', 'client_id' => $client->id]);
+        $service = Service::first();
+
+        $this->get('/admin/services')->assertSee('href="'.route('admin.services.edit', $service).'" aria-label="Edit '.$service->name.'">Edit</a>', false);
+        $this->get('/admin/portfolios')->assertSee('href="'.route('admin.portfolios.edit', $portfolio).'" aria-label="Edit Acara Edit">Edit</a>', false);
+        $this->get('/admin/clients')->assertSee('href="'.route('admin.clients.edit', $client).'" aria-label="Edit Mitra Edit">Edit</a>', false);
+    }
+
     public function test_crud_layanan_tier(): void
     {
         $this->post('/admin/services', $this->tierPayload())->assertRedirect('/admin/services');
@@ -120,7 +131,7 @@ class AdminCatalogTest extends TestCase
 
     private function portfolioPayload(array $extra = []): array
     {
-        return $extra + ['title' => 'Konser Kampus', 'category' => 'Concert', 'folder_color' => 'maroon', 'event_date' => '2026-06-10', 'is_featured' => '1'];
+        return $extra + ['title' => 'Konser Kampus', 'category' => 'Corporate', 'folder_color' => 'maroon', 'event_date' => '2026-06-10', 'is_featured' => '1'];
     }
 
     public function test_crud_portofolio_foto_jadi_webp(): void
@@ -200,7 +211,7 @@ class AdminCatalogTest extends TestCase
     public function test_hapus_klien_portofolio_tetap_ada(): void
     {
         $client = Client::create(['name' => 'Mitra']);
-        $portfolio = Portfolio::create(['title' => 'A', 'slug' => 'a', 'category' => 'Concert', 'folder_color' => 'red', 'client_id' => $client->id]);
+        $portfolio = Portfolio::create(['title' => 'A', 'slug' => 'a', 'category' => 'Corporate', 'folder_color' => 'red', 'client_id' => $client->id]);
 
         $this->delete(route('admin.clients.destroy', $client))->assertRedirect('/admin/clients');
 

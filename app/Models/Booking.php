@@ -25,6 +25,17 @@ class Booking extends Model
         ];
     }
 
+    /** Jam acara untuk tampilan, mis. "18:00–22:00" atau "18:00". Kosong jika jam mulai tidak diisi. */
+    public function eventTimeLabel(string $separator = ':'): string
+    {
+        if (! $this->event_time) {
+            return '';
+        }
+        $fmt = fn (string $time) => str_replace(':', $separator, $time);
+
+        return $fmt($this->event_time).($this->event_end_time ? '–'.$fmt($this->event_end_time) : '');
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(BookingItem::class);

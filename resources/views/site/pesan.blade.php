@@ -1,8 +1,8 @@
 @extends('layouts.site')
 
 @section('title', 'Pesan — FZM Production Mediatama')
-@section('description', 'Susun layanan, cek tanggal, dan pesan acara di FZM Production Mediatama.')
-@section('theme', '#F7F7F6')
+@section('description', 'Rangkai layanan, kunci tanggal yang masih kosong, dan pesan acaramu tanpa akun dalam tiga langkah.')
+@section('theme', '#FAFAFA')
 @section('no-footer', '1')
 @section('wa-text', 'Halo FZM, saya ingin bertanya sebelum memesan.')
 @section('wa-label', 'Tanya dulu')
@@ -12,23 +12,22 @@
     <div class="container">
       <form id="orderForm" method="post" action="{{ route('pesan.store') }}" novalidate>
         @csrf
-        <div class="order-head">
-          <div>
-            <div class="sec-label" data-reveal><span class="meta-num">(Pesan)</span><span class="meta">Tanpa akun · DP 50%</span></div>
-            <h1 class="split"><span class="line"><span>Susun pesanan</span></span><span class="line"><span style="--d:1">acaramu.</span></span></h1>
-          </div>
-          <p data-reveal style="--d:2">Pilih layanan, tentukan tanggal yang masih kosong, lalu kirim. Admin melanjutkan lewat WhatsApp.</p>
-        </div>
+        <x-page-head eyebrow="Tanpa akun · DP 50%" size="md">
+          Susun acara <x-accent>Anda.</x-accent>
+          <x-slot:lead><strong class="accent">Tiga langkah</strong> sederhana: pilih layanan, kunci tanggal yang masih kosong, lalu isi data. Tanpa akun dan tanpa formulir panjang. Rincian pesanan langsung terkirim ke WhatsApp tim kami.</x-slot:lead>
+        </x-page-head>
 
         <div class="order-layout">
           <div class="order-steps">
-            <section class="panel-card" aria-labelledby="s1" data-reveal>
-              <div class="step-head"><span class="step-num">01</span><h2 id="s1">Pilih layanan</h2></div>
+            <section class="order-step order-step--wide" aria-labelledby="s1">
+              <div class="step-head"><span class="step-num">1</span><h2 id="s1">Pilih layanan</h2><span class="step-hint">Klik paket sekali lagi untuk batal</span></div>
+              <div class="svc-grid">
               @foreach ($services as $service)
                 @if ($service->isTier())
                   <div class="svc-row" data-service="{{ $service->slug }}" data-name="{{ $service->name }}">
                     <div class="svc-row-head">
                       <div><div class="svc-row-name">{{ $service->name }}</div><div class="svc-row-desc">Pilih satu paket</div></div>
+                      <span class="svc-check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
                       <button class="svc-clear" type="button" hidden>Hapus</button>
                     </div>
                     <fieldset class="tiers">
@@ -40,36 +39,43 @@
                   </div>
                 @else
                   <div class="svc-row unit-row" data-service="{{ $service->slug }}" data-name="{{ $service->name }}">
-                    <div class="info"><div class="svc-row-name">{{ $service->name }}</div><div class="svc-row-desc">{{ rupiah($service->unit_price) }} / {{ $service->unit_label }}</div></div>
+                    <div class="svc-row-head">
+                      <div class="info"><div class="svc-row-name">{{ $service->name }}</div><div class="svc-row-desc">{{ rupiah($service->unit_price) }} / {{ $service->unit_label }}</div></div>
+                      <span class="svc-check" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+                    </div>
+                    <div class="unit-foot">
                     <div class="stepper">
                       <button type="button" data-step="-1" aria-label="Kurangi {{ $service->name }}">−</button>
                       <label><span class="sr-only">Jumlah {{ $service->name }} dalam {{ $service->unit_label }}</span><input type="number" name="qty[{{ $service->slug }}]" min="0" max="500" value="{{ old('qty.'.$service->slug, 0) }}" inputmode="numeric" data-price="{{ $service->unit_price }}" data-unit="{{ $service->unit_label }}"><span class="unit">{{ $service->unit_label }}</span></label>
                       <button type="button" data-step="1" aria-label="Tambah {{ $service->name }}">+</button>
                     </div>
                     <span class="unit-sub">Rp0</span>
+                    </div>
                   </div>
                 @endif
               @endforeach
+              </div>
               <p class="field-error" id="errItems" role="alert" @unless ($errors->has('items')) hidden @endunless>{{ $errors->first('items') ?: 'Pilih minimal satu layanan.' }}</p>
             </section>
 
-            <section class="panel-card" aria-labelledby="s2" data-reveal>
-              <div class="step-head">
-                <span class="step-num">02</span><h2 id="s2">Pilih tanggal</h2>
+            <section class="order-step" aria-labelledby="s2">
+              <div class="step-head"><span class="step-num">2</span><h2 id="s2">Pilih tanggal</h2></div>
+              <div class="panel-card cal-card">
                 <div class="cal-head">
                   <button class="icon-btn" type="button" id="calPrev" aria-label="Bulan sebelumnya"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
                   <span class="cal-month" id="calMonth" aria-live="polite">—</span>
                   <button class="icon-btn" type="button" id="calNext" aria-label="Bulan berikutnya"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
                 </div>
-              </div>
               <div class="calendar" id="calendar"></div>
               <input type="hidden" name="event_date" id="eventDate">
-              <div class="cal-legend"><span><i></i>Tersedia</span><span><i class="locked"></i>Terisi (dikonfirmasi)</span><span><i class="sel"></i>Pilihanmu</span></div>
+              <div class="cal-legend"><span><i class="sel"></i>Dipilih</span><span><i class="locked"></i>Sudah terisi</span><span><i></i>Tersedia</span></div>
+              </div>
               <p class="field-error" id="errDate" role="alert" @unless ($errors->has('event_date')) hidden @endunless>{{ $errors->first('event_date') ?: 'Pilih tanggal acara yang masih tersedia.' }}</p>
             </section>
 
-            <section class="panel-card" aria-labelledby="s3" data-reveal>
-              <div class="step-head"><span class="step-num">03</span><h2 id="s3">Data pemesan</h2></div>
+            <section class="order-step" aria-labelledby="s3">
+              <div class="step-head"><span class="step-num">3</span><h2 id="s3">Data pemesan</h2></div>
+              <div class="panel-card">
               <div class="form-grid">
                 <div class="field">
                   <label for="name">Nama lengkap / instansi</label>
@@ -82,10 +88,16 @@
                   <span class="field-error" id="errWa" @unless ($errors->has('customer_wa')) hidden @endunless>{{ $errors->first('customer_wa') ?: 'Nomor WA tidak valid (10–14 digit).' }}</span>
                 </div>
                 <div class="field">
-                  <label for="time">Jam mulai</label>
-                  <input class="input" id="time" name="event_time" type="time" value="{{ old('event_time', '18:00') }}">
+                  <label for="time">Jam mulai acara</label>
+                  <input class="input @error('event_time') is-invalid @enderror" id="time" name="event_time" type="time" value="{{ old('event_time', '18:00') }}">
+                  @error('event_time')<span class="field-error">{{ $message }}</span>@enderror
                 </div>
                 <div class="field">
+                  <label for="timeEnd">Jam selesai acara</label>
+                  <input class="input @error('event_end_time') is-invalid @enderror" id="timeEnd" name="event_end_time" type="time" value="{{ old('event_end_time') }}">
+                  @error('event_end_time')<span class="field-error">{{ $message }}</span>@enderror
+                </div>
+                <div class="field field--full">
                   <label for="loc">Lokasi acara</label>
                   <input class="input @error('event_location') is-invalid @enderror" id="loc" name="event_location" type="text" placeholder="Nama gedung / alamat" value="{{ old('event_location') }}">
                   <span class="field-error" id="errLoc" @unless ($errors->has('event_location')) hidden @endunless>{{ $errors->first('event_location') ?: 'Lokasi wajib diisi.' }}</span>
@@ -96,11 +108,12 @@
                 <textarea class="textarea" id="note" name="note" placeholder="Jenis acara, jumlah tamu, kebutuhan khusus…">{{ old('note') }}</textarea>
               </div>
               <div class="honeypot" aria-hidden="true"><label for="website">Website</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+              </div>
             </section>
           </div>
 
-          <aside class="summary" id="summary" aria-labelledby="sumTitle" data-reveal style="--d:2">
-            <div style="display:flex;justify-content:space-between;align-items:baseline"><h2 id="sumTitle">Ringkasan</h2><span class="meta" style="color:rgba(255,255,255,.55)" id="sumCount">0 item</span></div>
+          <aside class="summary" id="summary" aria-labelledby="sumTitle">
+            <div style="display:flex;justify-content:space-between;align-items:baseline"><h2 id="sumTitle">Ringkasan</h2><span class="summary-count" id="sumCount">0 item</span></div>
             <p class="summary-empty" id="sumEmpty">Belum ada layanan. Pilih paket atau isi ukuran di sebelah kiri.</p>
             <ul class="summary-lines" id="sumLines"></ul>
             <div class="summary-totals">
@@ -109,7 +122,7 @@
               <div class="s-row s-dp"><span>DP 50%</span><strong id="sumDp">Rp0</strong></div>
               <small>Tanggal dikunci setelah DP diterima dan dikonfirmasi admin.</small>
             </div>
-            <button class="btn btn-block" type="submit">Kirim &amp; lanjut ke WhatsApp <span class="arrow" aria-hidden="true">→</span></button>
+            <button class="btn btn-red btn-block" type="submit">Kirim &amp; lanjut ke WhatsApp <span class="arrow" aria-hidden="true">→</span></button>
           </aside>
         </div>
       </form>
@@ -136,5 +149,5 @@
   <script>
     window.FZM_CONFIG = @json($config);
   </script>
-  <script src="{{ asset('assets/js/pesan.js') }}"></script>
+  <script src="{{ asset_v('assets/js/pesan.js') }}"></script>
 @endpush

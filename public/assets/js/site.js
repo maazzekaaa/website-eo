@@ -1,239 +1,318 @@
 /* =========================================================
-   FZM Production v2 — site.js (dipakai semua halaman publik)
-   - Animasi muncul saat scroll (reveal + judul per baris)
-   - Navbar melayang: transparan → lebih pekat saat scroll,
-     selalu tampil saat di-scroll
-   - Menu ponsel, marquee, parallax hero, LED panggung
-   - Filter portofolio + tampilan foto besar
-   - Tombol WhatsApp melayang
+   FZM Production — site.js (dipakai semua halaman publik)
+   - Pudar singkat saat scroll (data-reveal)
+   - Menu ponsel dari navbar kapsul
+   - Tautan WhatsApp terisi otomatis, tahun di footer
    ========================================================= */
 (function () {
   'use strict';
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------- Reveal saat scroll ---------- */
-  var io = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+  /* ---------- Muncul saat scroll: lihat "Muncul mengikuti scroll" di bawah ----------
+     Anak dalam satu kelompok diberi urutan lewat --d. */
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Judul [data-words]: tiap kata dibungkus .w > span agar bisa naik dari balik garis.
+     Elemen di dalam judul (mis. kata aksen merah .serif) diperlakukan sebagai satu kata. */
+  $$('[data-words]').forEach(function (h) {
+    var n = 0;
+    var wrap = function (node) {
+      var w = document.createElement('span'); w.className = 'w';
+      var inner = document.createElement('span'); inner.style.setProperty('--i', n++);
+      w.appendChild(inner);
+      return { w: w, inner: inner };
+    };
+    Array.prototype.slice.call(h.childNodes).forEach(function (node) {
+      if (node.nodeType === 3) {
+        var frag = document.createDocumentFragment();
+        node.textContent.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+          var x = wrap(); x.inner.textContent = part; frag.appendChild(x.w);
+        });
+        h.replaceChild(frag, node);
+      } else if (node.nodeType === 1 && node.tagName !== 'BR') {
+        var x = wrap(); h.replaceChild(x.w, node); x.inner.appendChild(node);
+      }
     });
-  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 }) : null;
-  $$('[data-reveal], .split').forEach(function (el) {
-    if (io) io.observe(el); else el.classList.add('is-in');
+    // Urutan kata dinormalkan ke 0…1 (--t) agar kata terakhir tetap tampil penuh saat --p = 1
+    $$('.w > span', h).forEach(function (s, k, all) { s.style.setProperty('--t', all.length > 1 ? (k / (all.length - 1)).toFixed(3) : 0); });
   });
-  window.FZM_reveal = function (el) { if (io) io.observe(el); else el.classList.add('is-in'); };
 
-  /* ---------- Navbar ---------- */
-  var nav = $('.nav');
+  function mark(el, d) {
+    if (el.hasAttribute('data-reveal') || el.hasAttribute('data-words')) return;
+    el.setAttribute('data-reveal', '');
+    if (d) el.style.setProperty('--d', d);
+  }
+  $$('.page-head, .sec-head, .footer-top, .contact, .order-steps, .detail, .search-list').forEach(function (group) {
+    Array.prototype.forEach.call(group.children, function (child, k) { mark(child, Math.min(k, 6)); });
+  });
+  $$('.cta, .logo-strip, .footer-mark, .footer-bottom, .summary, .search-form, .search-group h2, .success').forEach(function (el) { mark(el, 0); });
+
+  /* ---------- Muncul mengikuti scroll (tanpa jeda waktu) ----------
+     Bukan animasi berdurasi: tiap elemen diberi --p (0 → 1) sesuai posisinya di layar, dihitung
+     setiap frame saat halaman digulir. CSS memetakan --p ke pudar, naik, dan blur. Karena terikat
+     langsung ke posisi scroll, efeknya selalu mengikuti gulir, cepat maupun lambat, tanpa
+     tertinggal, dan berbalik halus saat digulir ke atas. */
+  var revealEls = $$('[data-reveal], [data-words], [data-clip]');
+  var revealQueued = false;
+  function revealUpdate() {
+    revealQueued = false;
+    var vh = window.innerHeight, span = vh * 0.32;          // jarak gulir dari mulai muncul → tampil penuh
+    for (var k = 0; k < revealEls.length; k++) {
+      var el = revealEls[k];
+      var top = el.getBoundingClientRect().top;
+      var d = parseFloat(el.style.getPropertyValue('--d')) || 0;
+      var start = vh - d * vh * 0.035;                      // anak berikutnya mulai sedikit lebih akhir
+      var p = Math.round(Math.min(1, Math.max(0, (start - top) / span)) * 1000) / 1000;
+      if (el._p !== p) {
+        el._p = p;
+        el.style.setProperty('--p', p);
+        el.classList.toggle('is-in', p === 1);               // tampil penuh: filter dilepas (lebih ringan)
+      }
+    }
+  }
+  function revealQueue() { if (!revealQueued) { revealQueued = true; requestAnimationFrame(revealUpdate); } }
+  if (reduceMotion) {
+    revealEls.forEach(function (el) { el.classList.add('is-in'); });
+  } else {
+    document.documentElement.classList.add('scroll-reveal');
+    revealUpdate();
+    window.addEventListener('scroll', revealQueue, { passive: true });
+    window.addEventListener('resize', revealQueue);
+    window.addEventListener('load', revealQueue);
+  }
+
+  /* ---------- Paralaks foto: bergeser pelan berlawanan arah scroll ---------- */
+  var para = $$('[data-parallax]');
+  if (para.length && !reduceMotion) {
+    var ticking = false;
+    var update = function () {
+      ticking = false;
+      var vh = window.innerHeight;
+      para.forEach(function (img) {
+        var r = img.parentNode.getBoundingClientRect();
+        if (r.bottom < -100 || r.top > vh + 100) return;
+        var p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));   // 0 = baru masuk bawah, 1 = keluar atas
+        img.style.setProperty('--py', (-p * 9).toFixed(2) + '%');
+      });
+    };
+    var queue = function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+    window.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', queue);
+    update();
+  }
+
+  window.FZM_reveal = function (el) {
+    if (reduceMotion) { el.classList.add('is-in'); return; }
+    if (revealEls.indexOf(el) < 0) revealEls.push(el);
+    revealQueue();
+  };
+
+  /* ---------- Menu ponsel ---------- */
   var sheet = $('#navSheet');
   var burger = $('.nav-burger');
-  function onScroll() {
-    var y = window.scrollY;
-    if (nav) {
-      nav.classList.toggle('is-scrolled', y > 24);
-    }
-    parallax(y);
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-
   if (burger && sheet) {
-    burger.addEventListener('click', function () {
-      var open = sheet.hidden;
+    var setOpen = function (open) {
       sheet.hidden = !open;
       burger.setAttribute('aria-expanded', String(open));
       burger.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
-    });
-    $$('a', sheet).forEach(function (a) {
-      a.addEventListener('click', function () { sheet.hidden = true; burger.setAttribute('aria-expanded', 'false'); });
-    });
+    };
+    burger.addEventListener('click', function () { setOpen(sheet.hidden); });
+    $$('a', sheet).forEach(function (a) { a.addEventListener('click', function () { setOpen(false); }); });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !sheet.hidden) { sheet.hidden = true; burger.setAttribute('aria-expanded', 'false'); burger.focus(); }
+      if (e.key === 'Escape' && !sheet.hidden) { setOpen(false); burger.focus(); }
     });
   }
 
-  /* ---------- Hero: LED + parallax ---------- */
-  var led = $('#led');
-  if (led) {
-    var cells = '';
-    for (var i = 0; i < 64; i++) cells += '<i></i>';
-    led.innerHTML = cells;
-    var dots = $$('i', led);
-    var frame = 0;
-    var paint = function () {
-      dots.forEach(function (d, k) {
-        var r = Math.floor(k / 16), c = k % 16;
-        var on = ((c + r + frame) % 7 === 0) || (r === 1 && Math.abs(c - 8) < 3 + (frame % 3)) || (r === 2 && Math.abs(c - 8) < 4 + (frame % 2));
-        d.className = on ? 'on' : ((k + frame) % 5 === 0 ? 'dim' : '');
-      });
-      frame++;
-    };
-    paint();
-    if (!reduce) setInterval(paint, 1400);
-  }
-  var heroInner = $('.hero-media-inner');
-  function parallax(y) {
-    if (!heroInner || reduce) return;
-    var t = Math.min(y, 900);
-    heroInner.style.transform = 'translateY(' + (t * 0.08) + 'px) scale(' + (1 + t * 0.00012) + ')';
-  }
-
-  /* ---------- Marquee: gandakan isi agar mulus ---------- */
-  $$('.marquee-track').forEach(function (t) { t.innerHTML += t.innerHTML; });
-
-  /* ---------- Filter portofolio ---------- */
-  var filters = $('.filters');
-  var folders = $$('.folder, .table-print');
-  if (filters) {
-    var thumb = $('.filters-thumb', filters);
-    var btns = $$('.filter-btn', filters);
-    var moveThumb = function (btn) {
-      thumb.style.width = btn.offsetWidth + 'px';
-      thumb.style.transform = 'translateX(' + btn.offsetLeft + 'px)';
-    };
-    btns.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var cat = btn.getAttribute('data-filter');
-        btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
-        moveThumb(btn);
-        var n = 0;
-        folders.forEach(function (f) {
-          var show = cat === 'Semua' || f.getAttribute('data-category') === cat;
-          f.classList.toggle('is-out', !show);
-          f.classList.remove('is-entering');
-          if (show) { void f.offsetWidth; f.style.animationDelay = (n++ * 60) + 'ms'; f.classList.add('is-entering'); }
-        });
-      });
-    });
-    var active = $('.filter-btn[aria-pressed="true"]', filters) || btns[0];
-    requestAnimationFrame(function () { moveThumb(active); });
-    window.addEventListener('resize', function () { moveThumb($('.filter-btn[aria-pressed="true"]', filters)); });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { moveThumb($('.filter-btn[aria-pressed="true"]', filters)); });
-  }
-
-  /* ---------- Tampilan foto besar ---------- */
-  var lb = $('#lightbox');
-  if (lb) {
-    var plate = $('#lbPlate'), lbImg = $('#lbImg'), lbEmpty = $('#lbEmpty'), lbClose = $('#lbClose');
-    var lbPrev = $('#lbPrev'), lbNext = $('#lbNext');
-    var CLOSE_MS = 560;
-    var st = { photos: [], i: 0, opener: null, token: 0 };
-
-    var decoded = function () {
-      if (lbImg.hidden) return Promise.resolve();
-      var wait = lbImg.decode ? lbImg.decode().catch(function () {}) : Promise.resolve();
-      return Promise.race([wait, new Promise(function (r) { setTimeout(r, 700); })]);
-    };
-    var showPhoto = function () {
-      var has = st.photos.length > 0;
-      lbImg.hidden = !has;
-      lbEmpty.hidden = has;
-      if (has) {
-        lbImg.src = st.photos[st.i];
-        lbImg.alt = $('#lbTitle').textContent + ', foto ' + (st.i + 1);
-      }
-      lbPrev.hidden = lbNext.hidden = st.photos.length < 2;
-    };
-    /* Foto seolah terangkat dari tempatnya di halaman menuju tengah layar. */
-    var fromOpener = function () {
-      var o = st.opener && st.opener.getBoundingClientRect();
-      var p = plate.getBoundingClientRect();
-      if (!o || !o.width || !p.width) return 'scale(.96)';
-      return 'translate(' + ((o.left + o.width / 2) - (p.left + p.width / 2)) + 'px,' + ((o.top + o.height / 2) - (p.top + p.height / 2)) + 'px) scale(' + (o.width / p.width) + ')';
-    };
-    var openPlate = function (f) {
-      var d = f.dataset, token = ++st.token;
-      try { st.photos = JSON.parse(d.photos || '[]'); } catch (e) { st.photos = []; }
-      st.i = Math.min(parseInt(d.index, 10) || 0, Math.max(st.photos.length - 1, 0));
-      st.opener = f;
-      $('#lbTitle').textContent = d.title || '';
-      $('#lbMeta').textContent = [d.no, d.client, d.category, d.location, d.date].filter(Boolean).join(' · ');
-      lb.hidden = false;
-      lb.classList.remove('is-open');
-      document.body.classList.add('no-scroll');
-      plate.style.visibility = 'hidden';
-      showPhoto();
-      decoded().then(function () {
-        if (token !== st.token) return;
-        plate.style.visibility = '';
-        if (!reduce) {
-          plate.style.transition = 'none';
-          plate.style.transform = fromOpener();
-          void plate.offsetWidth;
-          plate.style.transition = '';
-        }
-        requestAnimationFrame(function () {
-          lb.classList.add('is-open');
-          plate.style.transform = '';
-        });
-        lbClose.focus({ preventScroll: true });
-      });
-    };
-    var closePlate = function () {
-      if (lb.hidden) return;
-      var token = ++st.token;
-      lb.classList.remove('is-open');
-      if (!reduce) plate.style.transform = fromOpener();
-      document.body.classList.remove('no-scroll');
-      if (st.opener) st.opener.focus({ preventScroll: true });
-      setTimeout(function () {
-        if (token !== st.token) return;
-        lb.hidden = true;
-        plate.style.transform = '';
-      }, reduce ? 0 : CLOSE_MS);
-    };
-    var go = function (n) {
-      if (st.photos.length < 2) return;
-      st.i = (st.i + n + st.photos.length) % st.photos.length;
-      plate.classList.add('is-swapping');
-      setTimeout(function () {
-        showPhoto();
-        decoded().then(function () { plate.classList.remove('is-swapping'); });
-      }, reduce ? 0 : 220);
-    };
-
-    $$('.folder, .table-print, .deck-card').forEach(function (f) {
-      if (f.classList.contains('is-placeholder')) return;
-      f.addEventListener('click', function (e) {
-        if (e.metaKey || e.ctrlKey || e.shiftKey) return;   // buka di tab baru tetap bisa
-        e.preventDefault();
-        openPlate(f);
-      });
-    });
-    lbClose.addEventListener('click', closePlate);
-    lbPrev.addEventListener('click', function () { go(-1); });
-    lbNext.addEventListener('click', function () { go(1); });
-    lb.addEventListener('click', function (e) {
-      if (!e.target.closest('.lb-frame, .lb-caption, .lb-nav, .lb-close')) closePlate();
-    });
-    document.addEventListener('keydown', function (e) {
-      if (lb.hidden) return;
-      if (e.key === 'Escape') closePlate();
-      if (e.key === 'ArrowLeft') go(-1);
-      if (e.key === 'ArrowRight') go(1);
-      if (e.key === 'Tab') {                       // jaga fokus tetap di dalam dialog
-        var f = $$('button', lb).filter(function (x) { return !x.hidden; });
-        if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
-        else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
-      }
-    });
-    var sx = null;
-    plate.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; }, { passive: true });
-    plate.addEventListener('touchend', function (e) {
-      if (sx === null) return;
-      var dx = e.changedTouches[0].clientX - sx;
-      if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
-      sx = null;
-    });
-  }
-
-  /* ---------- WhatsApp melayang ---------- */
+  /* ---------- WhatsApp ---------- */
   $$('[data-wa]').forEach(function (a) {
     a.href = 'https://wa.me/' + a.getAttribute('data-wa') + '?text=' + encodeURIComponent(a.getAttribute('data-text') || 'Halo FZM');
     a.target = '_blank'; a.rel = 'noopener';
   });
 
   $$('[data-year]').forEach(function (y) { y.textContent = new Date().getFullYear(); });
-  onScroll();
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var root = document.documentElement;
+
+  /* ---------- Judul beranda diketik huruf per huruf ---------- */
+  var title = $('.hero-type');
+  var hero = title && title.closest('.hero');
+  if (hero) {
+    var chars = $$('.ch', title);
+    if (reduce || !chars.length) {
+      hero.classList.add('is-typed');
+    } else {
+      hero.classList.add('is-typing');
+      var caret = document.createElement('span');
+      caret.className = 'caret';
+      caret.setAttribute('aria-hidden', 'true');
+      var i = 0;
+      var tick = function () {
+        if (i >= chars.length) {
+          hero.classList.add('is-typed');
+          caret.hidden = true;                                     // kursor langsung hilang begitu selesai
+          return;
+        }
+        var c = chars[i++], next = chars[i];
+        c.classList.add('is-on');
+        c.parentNode.insertBefore(caret, c.nextSibling);
+        var wait = 62 + Math.random() * 16;                       // irama rata, sedikit variasi agar tidak kaku
+        if (next && next.parentNode !== c.parentNode) wait += 90;  // jeda antarkata
+        if (next && next.closest('.hero-row') !== c.closest('.hero-row')) wait += 180; // pindah baris
+        setTimeout(tick, wait);
+      };
+      setTimeout(tick, 380);
+    }
+  }
+
+  /* ---------- Sorotan meluncur di navbar ---------- */
+  var navLinks = $('.nav-links');
+  if (navLinks && window.matchMedia('(hover: hover)').matches) {
+    var glow = document.createElement('span');
+    glow.className = 'nav-hover';
+    glow.setAttribute('aria-hidden', 'true');
+    navLinks.insertBefore(glow, navLinks.firstChild);
+    navLinks.addEventListener('mouseover', function (e) {
+      var a = e.target.closest('a');
+      if (!a) return;
+      var first = !navLinks.classList.contains('is-hovering');
+      glow.classList.toggle('is-instant', first);                // masuk pertama: langsung di tempat
+      glow.style.width = a.offsetWidth + 'px';
+      glow.style.transform = 'translateX(' + a.offsetLeft + 'px)';
+      navLinks.classList.add('is-hovering');
+    });
+    navLinks.addEventListener('mouseleave', function () { navLinks.classList.toggle('is-hovering', false); });
+  }
+
+  /* ---------- Pil hitam menu aktif: meluncur ke menu tujuan sebelum pindah halaman ---------- */
+  var nav = $('.nav');
+  var pill = null;
+  function placePill(link, instant) {
+    if (!pill) return;
+    pill.classList.toggle('is-instant', !!instant || reduce);
+    pill.classList.toggle('is-off', !link);
+    if (!link) return;
+    pill.style.width = link.offsetWidth + 'px';
+    pill.style.transform = 'translateX(' + link.offsetLeft + 'px)';
+  }
+  if (navLinks) {
+    pill = document.createElement('span');
+    pill.className = 'nav-active';
+    pill.setAttribute('aria-hidden', 'true');
+    navLinks.insertBefore(pill, navLinks.firstChild);
+    navLinks.classList.add('has-pill');
+    var current = function () { return $('a[aria-current="page"]', navLinks); };
+    placePill(current(), true);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { placePill(current(), true); });
+    window.addEventListener('resize', function () { placePill(current(), true); });
+    // Kembali lewat tombol Back (bfcache): kembalikan menu aktif semula
+    var initial = $$('a[aria-current]', nav);
+    window.addEventListener('pageshow', function (e) {
+      if (!e.persisted) return;
+      $$('a[aria-current]', nav).forEach(function (x) { x.removeAttribute('aria-current'); });
+      initial.forEach(function (x) { x.setAttribute('aria-current', 'page'); });
+      placePill(current(), true);
+    });
+  }
+
+  /* ---------- Web satu halaman: pil navbar mengikuti bagian yang sedang terlihat ----------
+     Menu ber-data-section menunjuk ke #id di beranda. Saat menu diklik, pil langsung pindah ke
+     tujuan dan tidak ikut "mampir" ke bagian yang dilewati selama gulir halus berlangsung. */
+  var spyLinks = navLinks ? $$('a[data-section]', navLinks) : [];
+  var spySections = spyLinks.map(function (a) { return document.getElementById(a.getAttribute('data-section')); });
+  if (spyLinks.length && spySections.slice(1).some(Boolean)) {
+    var alias = { klien: 'portofolio' };                       // strip klien termasuk bagian Portofolio
+    var extra = $$('#klien');
+    var spyHold = false, spyTimer = null, spyFirst = true;
+    var setActive = function (id) {
+      var link = spyLinks.filter(function (a) { return a.getAttribute('data-section') === id; })[0] || spyLinks[0];
+      if (link.getAttribute('aria-current') === 'page' && !spyFirst) return;
+      spyLinks.forEach(function (a) { if (a !== link) a.removeAttribute('aria-current'); });
+      link.setAttribute('aria-current', 'page');
+      placePill(link, spyFirst);
+      spyFirst = false;
+    };
+    var spy = function () {
+      if (spyHold) return;
+      // Bagian yang sudah melewati 40% tinggi layar dan paling dekat dengannya = bagian aktif
+      var line = window.innerHeight * 0.4, id = 'beranda', best = -Infinity;
+      spySections.concat(extra).forEach(function (sec) {
+        if (!sec || !sec.id) return;
+        var top = sec.getBoundingClientRect().top;
+        if (top <= line && top > best) { best = top; id = alias[sec.id] || sec.id; }
+      });
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) id = 'kontak';  // dasar halaman
+      setActive(id);
+    };
+    var spyQueued = false;
+    window.addEventListener('scroll', function () {
+      if (spyHold) { clearTimeout(spyTimer); spyTimer = setTimeout(release, 140); return; }   // tunggu gulir berhenti
+      if (!spyQueued) { spyQueued = true; requestAnimationFrame(function () { spyQueued = false; spy(); }); }
+    }, { passive: true });
+    var release = function () { spyHold = false; spy(); };
+    spyLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        setActive(a.getAttribute('data-section'));
+        spyHold = true;
+        clearTimeout(spyTimer); spyTimer = setTimeout(release, 900);
+      });
+    });
+    spy();
+    // Dibuka langsung ke /#bagian: peramban baru menggulir setelah halaman termuat
+    window.addEventListener('load', function () { spyFirst = true; spy(); });
+    window.addEventListener('hashchange', function () { if (!spyHold) spy(); });
+  }
+
+  /* ---------- Navbar menjadi lebih padat & buram saat halaman digulir ---------- */
+  if (nav) {
+    var onScroll = function () { nav.classList.toggle('is-scrolled', window.scrollY > 24); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  /* ---------- Perpindahan halaman ----------
+     Peramban dengan View Transitions: pudar silang lembut (CSS), dan pil navbar dipindah
+     oleh peramban sendiri dari posisi lama ke posisi baru (view-transition-name: nav-pill).
+     Peramban lama: pil digeser di sini, halaman memudar, lalu pindah. */
+  var noVt = root.classList.contains('no-vt');
+  var leaving = false, leaveTimer = null;
+  window.addEventListener('pageshow', function () { leaving = false; });
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[href]');
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#' || (a.target && a.target !== '_self') || a.hasAttribute('download') || a.hasAttribute('data-wa')) return;
+    var url = new URL(a.href, location.href);
+    if (url.origin !== location.origin) return;
+    if (url.pathname === location.pathname && url.search === location.search) {
+      // Tautan ke halaman ini sendiri tanpa #bagian (logo, Beranda): gulir ke atas, tanpa muat ulang
+      if (!url.hash) {
+        e.preventDefault();
+        history.replaceState(null, '', url.pathname);
+        window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      }
+      return;
+    }
+    // Klik beruntun saat halaman sedang berpindah diabaikan: transisi yang terpotong di tengah
+    // jalan membuat pil navbar melompat. Kunci dilepas otomatis bila halaman tak kunjung pindah.
+    if (leaving) { e.preventDefault(); return; }
+    leaving = true;
+    clearTimeout(leaveTimer);
+    leaveTimer = setTimeout(function () { leaving = false; }, 1500);
+    if (navLinks) navLinks.classList.toggle('is-hovering', false);   // sorotan abu tidak ikut terekam transisi
+    if (reduce || !noVt) return;                      // View Transitions bawaan yang bekerja
+    e.preventDefault();
+    if (pill && nav.contains(a)) {
+      $$('a[aria-current]', nav).forEach(function (x) { x.removeAttribute('aria-current'); });
+      a.setAttribute('aria-current', 'page');
+      placePill(navLinks.contains(a) ? a : null, false);
+    }
+    root.classList.add('is-leaving');
+    setTimeout(function () { location.href = a.href; }, 220);
+  });
+  window.addEventListener('pageshow', function (e) { if (e.persisted) root.classList.toggle('is-leaving', false); });
 })();

@@ -17,7 +17,7 @@
       s.classList.toggle('is-back', !!back);
       if (on) { s.style.animation = 'none'; void s.offsetWidth; s.style.animation = ''; }
     });
-    $('#enqStep').textContent = '0' + n + ' / 02';
+    $('#enqStep').textContent = 'Langkah ' + n + ' dari 2';
     $('#enqBar').style.width = (n * 50) + '%';
     var first = steps[n - 1].querySelector('input, textarea');
     if (first) first.focus({ preventScroll: true });

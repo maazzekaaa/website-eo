@@ -6,57 +6,32 @@ use App\Models\Client;
 use App\Models\Portfolio;
 use App\Models\Service;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
 
+/**
+ * Beranda satu halaman (one-scroll): hero, layanan, portofolio + klien, tentang, kontak.
+ * Halaman /layanan, /portofolio, /tentang, /kontak dialihkan ke bagiannya di sini (routes/web.php).
+ */
 class HomeController extends Controller
 {
-    private const MAX_SLIDES = 6;
+    /** Jumlah proyek di grid foto portofolio (bento: 1 besar + 4 kecil). */
+    public const PROJECTS = 5;
 
     public function __invoke(): View
     {
+        // Proyek bergambar, hanya Pernikahan & Korporat: unggulan lebih dulu, lalu terbaru.
+        $projects = Portfolio::with(['client', 'images'])
+            ->whereIn('category', Portfolio::CATEGORIES)
+            ->has('images')
+            ->orderByDesc('is_featured')
+            ->latest('event_date')
+            ->take(self::PROJECTS)
+            ->get();
+
         return view('site.home', [
-            'slides' => $this->slides(),
-            'stats' => [
-                'events' => Portfolio::count(),
-                'clients' => Client::count(),
-                'categories' => Portfolio::query()->distinct()->count('category'),
-            ],
             'services' => Service::active()->with('options')->orderBy('sort_order')->get(),
+            'projects' => $projects,
+            'gallery' => $projects->map(fn (Portfolio $portfolio) => $portfolio->galleryItem())->values(),
             'clients' => Client::withCount('portfolios')->orderByDesc('portfolios_count')->limit(12)->get(),
         ]);
-    }
-
-    /** Proyek di etalase beranda: gambar hero dari pengaturan (jika ada), lalu satu sampul per portofolio unggulan. */
-    private function slides(): Collection
-    {
-        $slides = Portfolio::with(['images', 'client'])->where('is_featured', true)->latest('event_date')->get()
-            ->filter(fn (Portfolio $portfolio) => $portfolio->images->isNotEmpty())
-            ->map(fn (Portfolio $portfolio) => [
-                'url' => $portfolio->images->first()->url(),
-                'title' => $portfolio->title,
-                'link' => route('portofolio.show', $portfolio),
-                'client' => $portfolio->client?->name ?? 'Klien pribadi',
-                'category' => $portfolio->category,
-                'location' => $portfolio->location,
-                'date' => $portfolio->event_date?->translatedFormat('j F Y'),
-                'photos' => $portfolio->images->count(),
-            ])
-            ->values();
-
-        if (setting('hero_image')) {
-            $slides->prepend([
-                'url' => Storage::disk('public')->url(setting('hero_image')),
-                'title' => (string) setting('company_name'),
-                'link' => route('portofolio.index'),
-                'client' => null,
-                'category' => 'Portofolio',
-                'location' => null,
-                'date' => null,
-                'photos' => null,
-            ]);
-        }
-
-        return $slides->take(self::MAX_SLIDES);
     }
 }

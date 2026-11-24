@@ -25,21 +25,21 @@ class DatabaseSeeder extends Seeder
             'bank_holder' => 'FZM Production Mediatama',
             'tax_enabled' => false,
             'tax_rate' => 11,
-            'hero_title' => "Panggung yang hidup,\nacara yang dikenang.",
-            'hero_subtitle' => 'Sound, lighting, videotron, rigging, dan multimedia untuk pernikahan, acara korporat, konser, hingga photoshoot.',
-            'about' => 'FZM Production Mediatama adalah event organizer dan penyedia produksi panggung: sound, lighting, videotron, rigging, dan multimedia untuk pernikahan, acara korporat, konser, hingga photoshoot.',
+            'hero_title' => 'Ada cerita di balik setiap perayaan.',
+            'hero_subtitle' => 'Mari tulis dan wujudkan ceritamu bersama kami.',
+            'about' => "FZM Production Mediatama adalah event organizer dan penyedia produksi panggung yang lahir dari satu keyakinan sederhana: setiap perayaan layak dikenang dengan sempurna.\n\nKami menangani sound system, lighting, videotron, rigging, hingga multimedia broadcasting dalam satu tim yang solid, mulai dari survei lokasi dan perencanaan teknis sampai acara usai. Tanpa perlu berkoordinasi dengan banyak vendor, Anda cukup fokus menikmati momen.\n\nDari resepsi pernikahan yang intim hingga gathering perusahaan berskala besar, kami hadir dengan peralatan terawat, kru berpengalaman, dan harga yang terbuka sejak awal.",
             'opening_hours' => '[Jam operasional]',
         ]);
 
         $tiers = [
-            ['sound', 'Sound System', 'Tata suara untuk acara kecil hingga panggung besar.', [3000000, 5000000, 7000000, 10000000], null],
-            ['lighting', 'Lighting', 'Pencahayaan panggung, ambience, dan efek show.', [1500000, 2250000, 3000000], null],
-            ['multimedia', 'Multimedia Broadcasting System', 'Kamera, switcher, dan siaran langsung acara.', [1500000, 2500000, 3000000], 'baru'],
+            ['sound', 'Sound System', 'Suara jernih yang menjangkau setiap sudut ruang, dari akad yang khidmat hingga konser yang menggelegar.', [3000000, 5000000, 7000000, 10000000], null],
+            ['lighting', 'Lighting', 'Tata cahaya yang membangun suasana: hangat untuk momen intim, dramatis saat panggung menuntut perhatian.', [1500000, 2250000, 3000000], null],
+            ['multimedia', 'Multimedia Broadcasting System', 'Abadikan dan siarkan acara secara langsung dengan kamera multi-sudut, switcher, dan streaming profesional.', [1500000, 2500000, 3000000], 'baru'],
         ];
         $units = [
-            ['videotron-indoor', 'Videotron Indoor', 'Layar LED untuk ruangan dan latar panggung.', 'm²', 400000],
-            ['videotron-outdoor', 'Videotron Outdoor', 'Layar LED terang untuk luar ruangan.', 'm²', 650000],
-            ['rigging', 'Rigging', 'Struktur truss untuk lighting, sound, dan layar.', 'm', 150000],
+            ['videotron-indoor', 'Videotron Indoor', 'Layar LED beresolusi tinggi untuk latar panggung dan presentasi yang memukau di dalam ruangan.', 'm²', 400000],
+            ['videotron-outdoor', 'Videotron Outdoor', 'Layar LED berkecerahan tinggi yang tetap tajam di bawah terik siang maupun langit malam.', 'm²', 650000],
+            ['rigging', 'Rigging', 'Struktur truss yang kokoh dan teruji untuk menopang lighting, sound, dan layar dengan aman.', 'm', 150000],
         ];
 
         $order = 0;

@@ -7,32 +7,29 @@
 @section('content')
   <main class="page-top">
     <div class="container">
-      <div class="page-head-site">
-        <div class="sec-label" data-reveal><a class="link-arrow meta" href="{{ route('layanan.index') }}"><span>← Semua layanan</span></a>@if ($service->badge)<span class="svc-badge">({{ ucfirst($service->badge) }})</span>@endif</div>
-        <h1 class="split"><span class="line"><span>{{ $service->name }}</span></span></h1>
-        <p data-reveal style="--d:2">{{ $service->description }}</p>
-      </div>
+      <x-page-head :lead="$service->description">
+        <x-slot:back><a class="back-link" href="{{ route('home') }}#layanan">← Semua layanan</a>@if ($service->badge)<span class="tag">{{ ucfirst($service->badge) }}</span>@endif</x-slot:back>
+        {{ $service->name }}
+      </x-page-head>
       <div class="detail">
-        <section class="detail-card" data-reveal aria-labelledby="hargaTitle">
-          <h2 id="hargaTitle">Harga</h2>
+        <x-detail-card title="Harga">
           <ul class="price-list">
             @if ($service->isTier())
               @foreach ($service->options as $option)
-                <li><span>{{ $option->name }}@if ($option->description)<br><small class="meta">{{ $option->description }}</small>@endif</span><strong>{{ rupiah($option->price) }}</strong></li>
+                <li><span>{{ $option->name }}@if ($option->description)<br><small class="price-note">{{ $option->description }}</small>@endif</span><strong class="accent">{{ rupiah($option->price) }}</strong></li>
               @endforeach
             @else
-              <li><span>Per {{ $service->unit_label }}</span><strong>{{ rupiah($service->unit_price) }}</strong></li>
+              <li><span>Per {{ $service->unit_label }}</span><strong class="accent">{{ rupiah($service->unit_price) }}</strong></li>
             @endif
           </ul>
-        </section>
-        <section class="detail-card" data-reveal style="--d:1">
-          <h2>Tertarik?</h2>
-          <p>Cek tanggal yang masih kosong dan susun pesananmu. DP 50% mengunci jadwal setelah dikonfirmasi admin.</p>
+        </x-detail-card>
+        <x-detail-card title="Siap mewujudkannya?">
+          <p>Pastikan tanggalmu masih tersedia, rangkai layanan yang dibutuhkan, lalu amankan jadwal dengan <strong class="accent">DP 50%</strong> setelah pesanan dikonfirmasi.</p>
           <div class="detail-actions">
             <a class="btn btn-red" href="{{ route('pesan.create', ['layanan' => $service->slug]) }}">Tambah ke pesanan <span class="arrow" aria-hidden="true">→</span></a>
             <a class="btn btn-ghost" href="#" data-wa="{{ setting('wa_number') }}" data-text="Halo FZM, saya ingin bertanya tentang layanan {{ $service->name }}.">Tanya layanan ini</a>
           </div>
-        </section>
+        </x-detail-card>
       </div>
     </div>
   </main>

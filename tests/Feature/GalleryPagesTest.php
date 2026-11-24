@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Client;
 use App\Models\Portfolio;
-use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\MakesBookings;
 use Tests\TestCase;
@@ -22,8 +21,8 @@ class GalleryPagesTest extends TestCase
     private function portfolio(array $attributes = [], int $photos = 2): Portfolio
     {
         $portfolio = Portfolio::create($attributes + [
-            'title' => 'Konser Kampus', 'slug' => 'konser-kampus', 'category' => 'Concert', 'folder_color' => 'maroon',
-            'is_featured' => true, 'event_date' => '2026-06-20', 'location' => 'Malang',
+            'title' => 'Konser Kampus', 'slug' => 'konser-kampus', 'category' => 'Corporate', 'folder_color' => 'maroon',
+            'is_featured' => true, 'event_date' => '2026-06-20', 'location' => 'Malang', 'services' => 'Sound, Lighting',
             'client_id' => Client::firstOrCreate(['name' => 'Mitra Satu'])->id,
         ]);
         for ($i = 1; $i <= $photos; $i++) {
@@ -35,149 +34,181 @@ class GalleryPagesTest extends TestCase
 
     public function test_navbar_berisi_semua_tautan_dan_menandai_halaman_aktif(): void
     {
-        $page = $this->get('/klien')->assertOk();
+        $page = $this->get('/layanan/sound')->assertOk();
 
-        foreach (['home', 'layanan.index', 'portofolio.index', 'klien.index', 'tentang', 'kontak', 'pesan.create'] as $route) {
-            $page->assertSee('href="'.route($route).'"', false);
+        // Web satu halaman: menu menggulir ke bagian beranda
+        foreach (['layanan', 'portofolio', 'tentang', 'kontak'] as $id) {
+            $page->assertSee('href="'.route('home').'#'.$id.'" data-section="'.$id.'"', false);
         }
+        $page->assertSee('href="'.route('pesan.create').'"', false);
         $page->assertSee('class="brand-pill"', false);
-        $page->assertSee('href="'.route('klien.index').'" aria-current="page"', false);
-        $page->assertDontSee('href="'.route('tentang').'" aria-current="page"', false);
+        $page->assertSee('data-section="layanan" aria-current="page"', false);
+        $page->assertDontSee('data-section="beranda" aria-current="page"', false);
+        $page->assertDontSee('>Klien</a>', false);
     }
 
-    public function test_beranda_menampilkan_etalase_portofolio_unggulan(): void
+    public function test_beranda_hero_tipografi_tanpa_gambar(): void
     {
         $this->portfolio();
-        $this->portfolio(['title' => 'Arsip Lama', 'slug' => 'arsip-lama', 'is_featured' => false]);
 
         $page = $this->get('/')->assertOk();
 
-        $page->assertSee('class="sc-slide is-active"', false);
+        $page->assertSee('aria-label="Rangkai Cipta, Hidupkan Karya."', false);
+        $page->assertSeeInOrder(['Rangkai', 'Cipta,', 'Hidupkan', 'Karya.'], false);
+        $page->assertSee('class="hero-word serif"', false);
+        // Hero tetap tipografi murni; foto proyek baru muncul di seksi setelahnya
+        $html = $page->getContent();
+        $hero = substr($html, strpos($html, '<header class="hero">'), strpos($html, '</header>') - strpos($html, '<header class="hero">'));
+        $this->assertStringNotContainsString('<img', $hero);
+        $page->assertDontSee('Masuk admin', false);
+        $page->assertDontSee('meta-num', false);
+        $page->assertSee('<span class="ch">R</span><span class="ch">a</span>', false);
+        $page->assertSee('Ada cerita di balik setiap perayaan. Mari tulis dan wujudkan ceritamu bersama kami.');
+        $page->assertDontSee('class="hero-brand"', false);
+    }
+
+    public function test_beranda_menampilkan_foto_proyek_klien(): void
+    {
+        $this->portfolio();
+        $this->portfolio(['title' => 'Tanpa Foto', 'slug' => 'tanpa-foto'], 0);
+
+        $page = $this->get('/')->assertOk();
+
+        $page->assertSee('class="showcase"', false);
         $page->assertSee('portfolios/konser-kampus-1.webp', false);
+        $page->assertSee('<span class="show-client">Mitra Satu</span>', false);
         $page->assertSee('href="'.route('portofolio.show', 'konser-kampus').'"', false);
-        $page->assertDontSee('arsip-lama-1.webp', false);
+        $page->assertDontSee('href="'.route('portofolio.show', 'tanpa-foto').'"', false);
+        $page->assertSee('class="eyebrow"', false);
     }
 
-    public function test_beranda_tidak_lagi_memakai_tali_jemuran(): void
+    public function test_web_satu_halaman_semua_bagian_ada_di_beranda(): void
     {
         $this->portfolio();
+        $page = $this->get('/')->assertOk();
 
+        foreach (['layanan', 'portofolio', 'klien', 'tentang', 'kontak'] as $id) {
+            $page->assertSee('id="'.$id.'"', false);
+        }
+        $page->assertSee('id="enquiry"', false);
+        foreach (['/layanan' => '/#layanan', '/portofolio' => '/#portofolio', '/tentang' => '/#tentang', '/kontak' => '/#kontak'] as $from => $to) {
+            $this->get($from)->assertStatus(301)->assertRedirect($to);
+        }
+    }
+
+    public function test_nomor_whatsapp_bisa_diketuk(): void
+    {
+        $this->get('/')->assertOk()->assertSee('class="wa-link accent" href="https://wa.me/', false);
+    }
+
+    public function test_beranda_menampilkan_strip_logo_klien(): void
+    {
+        $this->portfolio();
+        Client::create(['name' => 'Mitra Dua']);
+
+        $page = $this->get('/')->assertOk();
+
+        $page->assertSee('class="logo-strip"', false);
+        $page->assertSee('Mitra Satu')->assertSee('Mitra Dua');
+        $page->assertDontSee('/klien/', false);
+    }
+
+    public function test_footer_berisi_wordmark_fzm_production(): void
+    {
         $this->get('/')->assertOk()
-            ->assertDontSee('stage-wire', false)
-            ->assertDontSee('line-clip', false)
-            ->assertDontSee('line-print', false);
+            ->assertSee('class="footer-mark"', false)
+            ->assertSee('<span>FZM</span> <span>PRODUCTION</span>', false);
     }
 
-    public function test_beranda_memakai_gambar_hero_pengaturan_sebagai_foto_pertama(): void
+    public function test_halaman_klien_publik_dihapus_dan_dialihkan(): void
+    {
+        $portfolio = $this->portfolio();
+
+        $this->get('/klien')->assertStatus(301)->assertRedirect('/#klien');
+        $this->get('/klien/'.$portfolio->client_id)->assertStatus(301)->assertRedirect('/#klien');
+    }
+
+    public function test_portofolio_beranda_membuka_galeri_dan_studi_kasus(): void
     {
         $this->portfolio();
-        Setting::current()->update(['hero_image' => 'site/hero.webp']);
+
+        $page = $this->get('/')->assertOk();
+
+        $page->assertSee('aria-label="Lihat foto Konser Kampus"', false);
+        $page->assertSee('href="'.route('portofolio.show', 'konser-kampus').'"', false);
+        $page->assertSee('id="pfDetail"', false);
+        $page->assertDontSee('cursor-pill', false);
+        $page->assertDontSee('class="client-count"', false);
+    }
+
+    public function test_portofolio_beranda_dibatasi(): void
+    {
+        foreach (range(1, 7) as $n) {
+            $this->portfolio(['title' => 'Acara '.$n, 'slug' => 'acara-'.$n, 'event_date' => '2026-0'.$n.'-10'], 1);
+        }
 
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertLessThan(strpos($html, 'portfolios/konser-kampus-1.webp'), strpos($html, 'site/hero.webp'));
+        $this->assertSame(\App\Http\Controllers\HomeController::PROJECTS, substr_count($html, 'class="show-item"'));
+        $this->assertCount(\App\Http\Controllers\HomeController::PROJECTS, json_decode($this->extractJson($html, 'portfolioData'), true));
     }
 
-    public function test_beranda_tanpa_foto_tetap_tampil_dengan_placeholder(): void
-    {
-        $this->get('/')->assertOk()->assertSee('sc-slide is-active is-placeholder', false)->assertSee('00 — 00');
-    }
-
-    public function test_klien_berupa_tabel_dengan_pratinjau(): void
-    {
-        $portfolio = $this->portfolio();
-        Client::create(['name' => 'Mitra Kosong']);
-
-        $page = $this->get('/klien')->assertOk();
-
-        $page->assertSee('2 klien');
-        $page->assertSee('Mitra Satu')->assertSee('Mitra Kosong');
-        $page->assertSee('href="'.route('klien.show', $portfolio->client_id).'"', false);
-        $page->assertSee('data-preview="', false);
-        $page->assertSee('portfolios/konser-kampus-1.webp', false);
-        $page->assertSee('id="ledgerPreview"', false);
-        $page->assertSeeInOrder(['Mitra Satu', 'Concert', '2026'], false);
-    }
-
-    public function test_portofolio_satu_cetakan_per_foto_dan_tanpa_foto_tetap_muncul(): void
-    {
-        $this->portfolio();
-        $this->portfolio(['title' => 'Tanpa Foto', 'slug' => 'tanpa-foto', 'category' => 'Wedding', 'folder_color' => 'red'], 0);
-
-        $html = $this->get('/portofolio')->assertOk()->assertSee('3 foto')->getContent();
-
-        $this->assertSame(3, substr_count($html, 'class="table-print folder--'));
-        $this->assertStringContainsString('data-index="1"', $html);
-        $this->assertStringContainsString('aria-label="Buka galeri Tanpa Foto"', $html);
-        $this->assertStringContainsString('id="lightbox"', $html);
-        $this->assertStringContainsString('data-filter="Concert"', $html);
-    }
-
-    public function test_jumlah_pada_filter_sesuai_cetakan(): void
+    public function test_detail_portofolio_membawa_klien_tanggal_lokasi_dan_layanan(): void
     {
         $this->portfolio();
 
-        $html = $this->get('/portofolio')->assertOk()->getContent();
+        $page = $this->get('/')->assertOk();
 
-        $this->assertMatchesRegularExpression('#data-filter="Semua"[^>]*>Semua <span>2</span>#', $html);
-        $this->assertMatchesRegularExpression('#data-filter="Concert"[^>]*>Concert <span>2</span>#', $html);
-        $this->assertMatchesRegularExpression('#data-filter="Wedding"[^>]*>Wedding <span>0</span>#', $html);
-    }
-
-    public function test_portofolio_paling_banyak_15_foto(): void
-    {
-        $this->portfolio([], 20);
-
-        $html = $this->get('/portofolio')->assertOk()->assertSee('15 foto')->getContent();
-
-        $this->assertSame(15, substr_count($html, 'class="table-print folder--'));
-        $this->assertMatchesRegularExpression('#data-filter="Semua"[^>]*>Semua <span>15</span>#', $html);
-    }
-
-    public function test_foto_portofolio_membawa_klien_kategori_tempat_dan_tanggal(): void
-    {
-        $this->portfolio();
-
-        $page = $this->get('/portofolio')->assertOk();
-
-        $page->assertSee('data-client="Mitra Satu"', false);
-        $page->assertSee('data-category="Concert"', false);
-        $page->assertSee('data-location="Malang"', false);
-        $page->assertSee('data-date="20 Juni 2026"', false);
-        foreach (['lbImg', 'lbTitle', 'lbMeta', 'lbClose'] as $id) {
+        $data = json_decode($this->extractJson($page->getContent(), 'portfolioData'), true);
+        $this->assertSame('Mitra Satu', $data[0]['client']);
+        $this->assertSame('20 Juni 2026', $data[0]['date']);
+        $this->assertSame('Malang', $data[0]['location']);
+        $this->assertSame('Sound, Lighting', $data[0]['services']);
+        $this->assertSame(route('portofolio.show', 'konser-kampus'), $data[0]['link']);
+        foreach (['pdClient', 'pdDate', 'pdLoc', 'pdSvc', 'pdImg', 'pdClose'] as $id) {
             $page->assertSee('id="'.$id.'"', false);
         }
     }
 
-    public function test_font_kembali_seperti_proyek_lama(): void
+    public function test_portofolio_hanya_pernikahan_dan_korporat(): void
     {
-        $this->assertStringNotContainsString('Anton', $this->get('/')->assertOk()->getContent());
-        $this->assertStringNotContainsString('Anton', file_get_contents(public_path('assets/css/site.css')));
-    }
-
-    public function test_etalase_beranda_membawa_data_proyek_dan_statistik(): void
-    {
-        $this->portfolio();
+        $this->portfolio(['title' => 'Konser Lama', 'slug' => 'konser-lama', 'category' => 'Concert']);
+        $this->portfolio(['title' => 'Resepsi', 'slug' => 'resepsi', 'category' => 'Wedding']);
 
         $page = $this->get('/')->assertOk();
+        $data = json_decode($this->extractJson($page->getContent(), 'portfolioData'), true);
 
-        $page->assertSee('class="stage-stats"', false);
-        $page->assertSee('<dt class="meta">Acara ditangani</dt><dd>01</dd>', false);
-        $page->assertDontSee('Masuk admin', false);
-        $page->assertSee('data-client="Mitra Satu"', false);
-        $page->assertSee('data-category="Concert"', false);
-        $page->assertSee('data-location="Malang"', false);
-        $page->assertSee('data-date="20 Juni 2026"', false);
-        $page->assertSee('data-photos="', false);
-        $page->assertSee('data-no="01"', false);
+        $this->assertSame(['Pernikahan'], array_values(array_unique(array_column($data, 'category'))));
+        $page->assertDontSee('Konser Lama');
     }
 
-    public function test_judul_portofolio_tanpa_latar(): void
+    public function test_portofolio_unggulan_tampil_lebih_dulu(): void
     {
-        $css = file_get_contents(public_path('assets/css/site.css'));
+        $this->portfolio(['title' => 'Arsip Lama', 'slug' => 'arsip-lama', 'is_featured' => false, 'event_date' => '2026-09-01']);
+        $this->portfolio();
 
-        $this->assertStringNotContainsString('.table-copy::before', $css);
-        $this->assertStringContainsString('.filters--pills .filter-btn { min-height: 42px; padding: 0 18px; border-radius: var(--pill); font-size: 14px; color: var(--ink); background: transparent;', $css);
+        $data = json_decode($this->extractJson($this->get('/')->getContent(), 'portfolioData'), true);
+
+        $this->assertSame('Konser Kampus', $data[0]['title']);
+    }
+
+    public function test_formulir_pesan_punya_jam_mulai_dan_selesai(): void
+    {
+        $this->get('/pesan')->assertOk()
+            ->assertSee('name="event_time"', false)
+            ->assertSee('name="event_end_time"', false)
+            ->assertSee('Jam selesai acara');
+    }
+
+    public function test_font_dan_warna_desain_baru(): void
+    {
+        $base = file_get_contents(public_path('assets/css/base.css'));
+
+        $this->assertStringContainsString('--red: #C2272D;', $base);
+        $this->assertStringContainsString('"Open Sauce One"', $base);
+        $this->assertFileExists(public_path('assets/fonts/open-sauce-one-latin-800-normal.woff2'));
+        // Warna flat: tanpa gradasi, termasuk wordmark footer.
+        $this->assertStringNotContainsString('linear-gradient', file_get_contents(public_path('assets/css/site.css')));
     }
 
     public function test_navbar_tidak_lagi_bersembunyi_saat_digulir(): void
@@ -192,8 +223,15 @@ class GalleryPagesTest extends TestCase
         $client = Client::create(['name' => $evil]);
         $this->portfolio(['title' => $evil, 'slug' => 'jahat', 'location' => $evil, 'client_id' => $client->id]);
 
-        foreach (['/', '/klien', '/portofolio'] as $url) {
+        foreach (['/', '/portofolio/jahat'] as $url) {
             $this->assertStringNotContainsString('<script>alert(1)', $this->get($url)->assertOk()->getContent(), $url);
         }
+    }
+
+    private function extractJson(string $html, string $id): string
+    {
+        preg_match('#<script id="'.$id.'" type="application/json">(.*?)</script>#s', $html, $m);
+
+        return $m[1] ?? 'null';
     }
 }

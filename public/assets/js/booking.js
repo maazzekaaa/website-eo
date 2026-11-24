@@ -33,7 +33,7 @@
     badge.className = 'badge badge-' + b.status;
     badge.textContent = ST[b.status];
     if (b.status === 'pending') { badge.style.background = 'rgba(255,255,255,.14)'; badge.style.color = '#fff'; }
-    if (b.status === 'confirmed') { badge.style.background = '#fff'; badge.style.color = '#0D0D0D'; }
+    if (b.status === 'confirmed') { badge.style.background = '#fff'; badge.style.color = '#101010'; }
     $('#payBadge').className = 'badge badge-' + pk;
     $('#payBadge').textContent = PAY[pk];
 

@@ -45,7 +45,7 @@
 
     <article class="card form-stack">
       <div class="card-head"><div><h2>Konten website</h2></div></div>
-      <div class="field"><label for="hero_title">Judul beranda</label><textarea class="textarea" id="hero_title" name="hero_title" style="min-height:90px">{{ old('hero_title', $setting->hero_title) }}</textarea><span class="field-hint">Tampil sebagai kalimat utama di bawah nama perusahaan.</span></div>
+      <div class="field"><label for="hero_title">Judul beranda</label><textarea class="textarea" id="hero_title" name="hero_title" style="min-height:90px">{{ old('hero_title', $setting->hero_title) }}</textarea><span class="field-hint">Tampil di bawah judul besar beranda, disambung subjudul.</span></div>
       <div class="field"><label for="hero_subtitle">Subjudul beranda</label><textarea class="textarea" id="hero_subtitle" name="hero_subtitle" style="min-height:90px">{{ old('hero_subtitle', $setting->hero_subtitle) }}</textarea></div>
       <div class="field">
         <label for="hero">Gambar beranda (tampil sebagai foto pertama di tali)</label>

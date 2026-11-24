@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Berkas terlalu besar — FZM Production</title>
-  <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
+  <link rel="stylesheet" href="{{ asset_v('assets/css/base.css') }}">
 </head>
 <body style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--paper)">
   <main style="max-width:480px;display:flex;flex-direction:column;gap:16px;align-items:flex-start">

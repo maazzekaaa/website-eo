@@ -96,3 +96,8 @@ body.doc-body { background: #E9E9E9; font-family: "Inter", Arial, sans-serif; co
   .kw-head, .doc-foot { flex-wrap: wrap; gap: 16px; }
   .kw-rows { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Invoice bermerek: isi berasal dari admin/documents/pdf/invoice-body (sama dengan PDF) */
+.sheet--doc { padding: 32px 36px; }
+.sheet--doc .doc { font-family: "Open Sauce One", system-ui, sans-serif; }
+.sheet--doc::before { display: none; }

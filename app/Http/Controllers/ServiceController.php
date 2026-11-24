@@ -7,13 +7,6 @@ use Illuminate\Contracts\View\View;
 
 class ServiceController extends Controller
 {
-    public function index(): View
-    {
-        return view('site.layanan.index', [
-            'services' => Service::active()->with('options')->orderBy('sort_order')->get(),
-        ]);
-    }
-
     public function show(string $slug): View
     {
         return view('site.layanan.show', [

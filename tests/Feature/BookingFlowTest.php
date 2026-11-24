@@ -43,6 +43,21 @@ class BookingFlowTest extends TestCase
             ->assertSee('https://wa.me/', false);
     }
 
+    public function test_jam_selesai_tersimpan_dan_masuk_pesan_whatsapp(): void
+    {
+        $this->post('/pesan', $this->payload(['event_end_time' => '22:00']));
+
+        $booking = Booking::firstOrFail();
+        $this->assertSame('22:00', $booking->event_end_time);
+        $this->get(route('pesan.success', $booking->booking_code))->assertOk()->assertSee('18:00–22:00');
+    }
+
+    public function test_jam_selesai_tidak_valid_ditolak(): void
+    {
+        $this->post('/pesan', $this->payload(['event_end_time' => '25:99']))->assertSessionHasErrors('event_end_time');
+        $this->assertSame(0, Booking::count());
+    }
+
     public function test_harga_dari_browser_diabaikan(): void
     {
         $this->post('/pesan', $this->payload(['total' => 1000, 'price' => 1, 'subtotal' => 1, 'dp_amount' => 1]));

@@ -7,15 +7,14 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DocumentController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PortfolioController as AdminPortfolioController;
+use App\Http\Controllers\Admin\RecapController;
 use App\Http\Controllers\Admin\RevenueController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\ClientController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\PageController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ServiceController;
@@ -23,14 +22,17 @@ use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
-Route::get('/layanan', [ServiceController::class, 'index'])->name('layanan.index');
+// Web satu halaman: Layanan, Portofolio, Tentang, Kontak kini bagian dari beranda.
+// Alamat lama tetap hidup dan diarahkan ke bagiannya.
+Route::permanentRedirect('/layanan', '/#layanan')->name('layanan.index');
+Route::permanentRedirect('/portofolio', '/#portofolio')->name('portofolio.index');
+Route::permanentRedirect('/tentang', '/#tentang')->name('tentang');
+Route::permanentRedirect('/kontak', '/#kontak')->name('kontak');
 Route::get('/layanan/{slug}', [ServiceController::class, 'show'])->name('layanan.show');
-Route::get('/portofolio', [PortfolioController::class, 'index'])->name('portofolio.index');
 Route::get('/portofolio/{portfolio}', [PortfolioController::class, 'show'])->name('portofolio.show');
-Route::get('/klien', [ClientController::class, 'index'])->name('klien.index');
-Route::get('/klien/{client}', [ClientController::class, 'show'])->name('klien.show');
-Route::get('/tentang', [PageController::class, 'about'])->name('tentang');
-Route::get('/kontak', [PageController::class, 'contact'])->name('kontak');
+// Halaman klien publik dihapus; tautan lama diarahkan ke strip logo di beranda.
+Route::permanentRedirect('/klien', '/#klien');
+Route::get('/klien/{any}', fn () => redirect('/#klien', 301))->where('any', '.*');
 Route::get('/cari', SearchController::class)->name('cari');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
@@ -51,6 +53,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('/', DashboardController::class)->name('dashboard');
         Route::get('/revenue', RevenueController::class)->name('revenue');
+        Route::get('/rekap', RecapController::class)->name('recap');
 
         Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');

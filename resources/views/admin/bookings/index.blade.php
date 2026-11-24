@@ -11,6 +11,13 @@
     </div>
   </div>
 
+  <nav class="tabs" aria-label="Filter status">
+    <a href="{{ route('admin.bookings.index') }}" @if (! request('status')) aria-current="page" @endif>Semua <span>{{ $statusCounts->sum() }}</span></a>
+    @foreach (['pending', 'confirmed', 'completed'] as $value)
+      <a href="{{ route('admin.bookings.index', ['status' => $value]) }}" @if (request('status') === $value) aria-current="page" @endif>{{ \App\Models\Booking::STATUS_LABELS[$value] }} <span>{{ $statusCounts[$value] ?? 0 }}</span></a>
+    @endforeach
+  </nav>
+
   <article class="card" data-reveal>
     <form method="get" class="filter-bar">
       <div class="field">
@@ -39,7 +46,9 @@
     </form>
 
     <div class="table-wrap">
-      <table class="table">
+      {{-- Lebar kolom dikunci (table-layout: fixed) agar tabel tidak melebar/menyempit saat pindah filter --}}
+      <table class="table table-fixed">
+        <colgroup><col style="width:24%"><col style="width:19%"><col style="width:14%"><col style="width:15%"><col style="width:12%"><col style="width:12%"><col style="width:4%"></colgroup>
         <thead><tr><th>Pemesan</th><th>Kode</th><th>Tanggal acara</th><th class="num">Total</th><th>Status</th><th>Bayar</th><th><span class="sr-only">Buka</span></th></tr></thead>
         <tbody>
           @forelse ($bookings as $booking)

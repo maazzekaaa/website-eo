@@ -1,6 +1,6 @@
 /* =========================================================
    FZM Production v2 — pesan.js
-   Keranjang layanan (total & DP 50% beranimasi), kalender
+   Keranjang layanan (total & DP 50%), kalender
    ketersediaan, validasi, dan pesan WhatsApp otomatis.
    Perhitungan di sini hanya pratinjau: server wajib
    menghitung ulang dari database.
@@ -21,22 +21,12 @@
   var locked = {};
   (cfg.locked || []).forEach(function (d) { locked[d] = true; });
 
-  /* ---------- Angka beranimasi ---------- */
-  var tweens = {};
-  function tweenTo(el, to) {
-    var id = el.id;
-    var from = tweens[id] ? tweens[id].value : 0;
-    if (tweens[id] && tweens[id].raf) cancelAnimationFrame(tweens[id].raf);
-    if (reduce || from === to) { el.textContent = rp(to); tweens[id] = { value: to }; return; }
-    var t0 = performance.now(), dur = 700;
-    var state = tweens[id] = { value: from };
-    (function step(now) {
-      var k = Math.min(1, (now - t0) / dur);
-      var e = 1 - Math.pow(1 - k, 4);
-      state.value = from + (to - from) * e;
-      el.textContent = rp(state.value);
-      if (k < 1) state.raf = requestAnimationFrame(step); else state.value = to;
-    })(t0);
+  /* ---------- Angka: langsung berganti, tanpa animasi menghitung ---------- */
+  function setRp(el, to) {
+    var text = rp(to);
+    if (el.textContent === text) return;
+    el.textContent = text;
+    el.classList.remove('is-bump'); void el.offsetWidth; el.classList.add('is-bump');
   }
 
   /* ---------- Keranjang ---------- */
@@ -74,19 +64,22 @@
       prevKeys = keys;
     }
     $('#sumCount').textContent = c.count + ' item';
-    tweenTo($('#sumTotal'), c.total);
-    tweenTo($('#sumDp'), c.dp);
-    tweenTo($('#barTotal'), c.total);
+    setRp($('#sumTotal'), c.total);
+    setRp($('#sumDp'), c.dp);
+    setRp($('#barTotal'), c.total);
     $('#barDp').textContent = rp(c.dp);
     rows.forEach(function (row) {
       var clear = $('.svc-clear', row);
-      if (clear) clear.hidden = !$('input[type="radio"]:checked', row);
+      var picked = !!$('input[type="radio"]:checked', row);
+      if (clear) clear.hidden = !picked;
       var q = $('input[type="number"]', row);
       if (q) {
         var n = clamp(q.value), sub = $('.unit-sub', row);
         sub.textContent = rp(n * +q.getAttribute('data-price'));
         sub.classList.toggle('is-on', n > 0);
+        picked = n > 0;
       }
+      row.classList.toggle('is-picked', picked);     // kartu terpilih diberi garis tegas + centang
     });
     if (c.lines.length) $('#errItems').hidden = true;
     return c;
@@ -238,8 +231,7 @@
       setTimeout(function () {
         row.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
         row.classList.add('is-flash');
-        var f = $('input', row); if (f) f.focus({ preventScroll: true });
-      }, 500);
+      }, 150);
     }
   }
 

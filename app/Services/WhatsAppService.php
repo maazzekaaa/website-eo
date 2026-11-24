@@ -21,7 +21,7 @@ class WhatsAppService
     public function bookingMessage(Booking $booking): string
     {
         $items = $booking->items->map(fn ($item) => "- {$item->description} ({$item->qty} {$item->unit}): ".rupiah($item->subtotal))->implode("\n");
-        $date = $booking->event_date->translatedFormat('j F Y').($booking->event_time ? ", {$booking->event_time}" : '');
+        $date = $booking->event_date->translatedFormat('j F Y').($booking->event_time ? ", {$booking->eventTimeLabel()}" : '');
         $tax = $booking->tax_amount ? "PPN {$booking->tax_rate}%: ".rupiah($booking->tax_amount)."\n" : '';
 
         return "Halo FZM, saya ingin memesan.\n"

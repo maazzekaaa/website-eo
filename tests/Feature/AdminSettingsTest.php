@@ -45,12 +45,12 @@ class AdminSettingsTest extends TestCase
 
     public function test_pengaturan_tersimpan_dan_tampil_di_situs(): void
     {
-        $this->get('/')->assertSee('Panggung yang hidup');
+        $this->get('/')->assertSee('Ada cerita di balik setiap perayaan.');
 
         $this->put('/admin/settings', $this->payload())->assertRedirect()->assertSessionHas('toast');
 
         $this->get('/')->assertSee('Judul baru,')->assertDontSee('Panggung yang hidup')->assertSee('628112223333', false);
-        $this->get('/kontak')->assertSee('Jl. Uji 1');
+        $this->get('/')->assertSee('Jl. Uji 1');
     }
 
     public function test_ppn_aktif_berlaku_untuk_booking_baru_saja(): void

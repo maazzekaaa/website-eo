@@ -4,7 +4,7 @@
 
 @section('content')
   <div class="page-head" data-reveal>
-    <div><span class="meta">Katalog</span><h1 style="margin-top:6px">Klien / mitra</h1></div>
+    <div><a class="back-link" href="{{ route('admin.portfolios.index') }}">← Portofolio</a><h1 style="margin-top:6px">Klien / mitra</h1><p>Logo klien tampil berjalan di beranda.</p></div>
     <a class="btn btn-red" href="{{ route('admin.clients.create') }}">+ Tambah klien</a>
   </div>
   <article class="card" data-reveal>
@@ -17,7 +17,7 @@
               <td><a href="{{ route('admin.clients.edit', $client) }}" style="color:inherit;text-decoration:none;font-weight:500">{{ $client->name }}</a></td>
               <td>{{ $client->website ?: '—' }}</td>
               <td class="num">{{ $client->portfolios_count }}</td>
-              <td><form class="table-actions" method="post" action="{{ route('admin.clients.destroy', $client) }}" onsubmit="return confirm('Hapus klien ini? Portofolionya tetap ada.')">@csrf @method('DELETE')<button class="btn btn-sm btn-danger" type="submit">Hapus</button></form></td>
+              <td><div class="table-actions"><a class="btn btn-sm btn-light" href="{{ route('admin.clients.edit', $client) }}" aria-label="Edit {{ $client->name }}">Edit</a><form method="post" action="{{ route('admin.clients.destroy', $client) }}" onsubmit="return confirm('Hapus klien ini? Portofolionya tetap ada.')">@csrf @method('DELETE')<button class="btn btn-sm btn-danger" type="submit">Hapus</button></form></div></td>
             </tr>
           @empty
             <tr><td colspan="4" class="empty">Belum ada klien.</td></tr>

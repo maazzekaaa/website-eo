@@ -20,6 +20,7 @@ class StoreBookingRequest extends FormRequest
                 }
             }],
             'event_time' => ['nullable', 'date_format:H:i'],
+            'event_end_time' => ['nullable', 'date_format:H:i'],
             'event_location' => ['required', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:2000'],
             'website' => ['nullable', 'string'],
@@ -34,6 +35,7 @@ class StoreBookingRequest extends FormRequest
             'customer_name.max' => 'Nama terlalu panjang.',
             'customer_wa.required' => 'Nomor WA tidak valid (10–14 digit).',
             'event_time.*' => 'Jam mulai tidak valid.',
+            'event_end_time.*' => 'Jam selesai tidak valid.',
             'event_location.required' => 'Lokasi wajib diisi.',
             'event_location.max' => 'Lokasi terlalu panjang.',
             'note.max' => 'Catatan terlalu panjang.',

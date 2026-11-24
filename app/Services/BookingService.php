@@ -31,6 +31,7 @@ class BookingService
                 'customer_wa' => app(WhatsAppService::class)->normalize($data['customer_wa']),
                 'event_date' => $data['event_date'],
                 'event_time' => $data['event_time'] ?? null,
+                'event_end_time' => $data['event_end_time'] ?? null,
                 'event_location' => $data['event_location'],
                 'note' => $data['note'] ?? null,
                 'subtotal' => $cart->subtotal,

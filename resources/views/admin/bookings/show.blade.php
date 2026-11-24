@@ -69,7 +69,7 @@
             <div class="ring-wrap">
               <div class="ring">
                 <svg viewBox="0 0 132 132" aria-hidden="true">
-                  <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF4A5A"/><stop offset="1" stop-color="#8E0F1B"/></linearGradient></defs>
+                  <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C2272D"/><stop offset="1" stop-color="#C2272D"/></linearGradient></defs>
                   <circle class="track" cx="66" cy="66" r="54"/>
                   <circle class="val" id="ringVal" cx="66" cy="66" r="54"/>
                 </svg>
@@ -101,7 +101,7 @@
             <dl class="kv">
               <dt>Nama</dt><dd>{{ $booking->customer_name }}</dd>
               <dt>WhatsApp</dt><dd>{{ $booking->customer_wa }}</dd>
-              <dt>Acara</dt><dd>{{ $booking->event_date->translatedFormat('l, j F Y') }}@if ($booking->event_time) · {{ str_replace(':', '.', $booking->event_time) }}@endif</dd>
+              <dt>Acara</dt><dd>{{ $booking->event_date->translatedFormat('l, j F Y') }}@if ($booking->event_time) · {{ $booking->eventTimeLabel('.') }}@endif</dd>
               <dt>Lokasi</dt><dd>{{ $booking->event_location }}</dd>
               @if ($booking->note)<dt>Catatan</dt><dd style="font-weight:400;white-space:pre-line">{{ $booking->note }}</dd>@endif
               @if ($booking->admin_note)<dt>Catatan admin</dt><dd style="font-weight:400;white-space:pre-line">{{ $booking->admin_note }}</dd>@endif
@@ -187,5 +187,5 @@
 
 @push('scripts')
   <script id="bookingData" type="application/json">@json($bookingData)</script>
-  <script src="{{ asset('assets/js/booking.js') }}"></script>
+  <script src="{{ asset_v('assets/js/booking.js') }}"></script>
 @endpush

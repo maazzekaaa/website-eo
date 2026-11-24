@@ -1,0 +1,1 @@
+<svg viewBox="0 0 478 472" fill="currentColor" aria-hidden="true" focusable="false"><path d="M0 40Q0 0 40 0H95V472H0Z"/><rect x="135" width="343" height="95"/><path d="M135 147H478V472H386V237H135Z"/><rect x="135" y="277" width="93" height="195"/><rect x="260" y="277" width="93" height="195"/></svg>

@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 @section('title', 'Pesanan terkirim — FZM Production Mediatama')
-@section('theme', '#F7F7F6')
+@section('theme', '#FAFAFA')
 @section('no-footer', '1')
 @section('no-wa-float', '1')
 
@@ -13,7 +13,7 @@
         <div>
           <span class="meta">Kode booking</span>
           <h1 style="margin-top:6px">{{ $booking->booking_code }}</h1>
-          <p>Status <b>menunggu</b>. Lanjutkan ke WhatsApp agar admin bisa mengirim invoice dan instruksi DP.</p>
+          <p>Pesanan Anda sudah kami terima dengan status <b>menunggu</b>. Lanjutkan ke WhatsApp agar tim kami dapat segera mengirimkan invoice beserta instruksi pembayaran DP.</p>
         </div>
         <div class="wa-preview"><span class="meta">Pesan WhatsApp (terisi otomatis)</span><pre>{{ $message }}</pre></div>
         <div class="success-actions">

@@ -30,8 +30,7 @@
   };
 
   /* ---------- Sapaan ---------- */
-  var h = new Date().getHours();
-  $('#greeting').textContent = (h < 11 ? 'Selamat pagi' : h < 15 ? 'Selamat siang' : h < 19 ? 'Selamat sore' : 'Selamat malam') + ', Admin';
+  $('#greeting').textContent = 'Halo, Admin';
   $('#todayLabel').textContent = DAYS[TODAY.getDay()] + ', ' + D + ' ' + MONTHS[M] + ' ' + Y + ' · WIB';
 
   /* ---------- Statistik ---------- */
@@ -200,7 +199,7 @@
   renderChart();
 
   /* ---------- Donut ---------- */
-  var COLORS = { unpaid: '#F6C3C8', dp: '#0D0D0D', paid: '#E11D2E' };
+  var COLORS = { unpaid: '#D8D8D8', dp: '#C2272D', paid: '#101010' };   // flat: abu, merah, hitam
   function renderDonut() {
     var act = bookings.filter(active);
     var counts = { unpaid: 0, dp: 0, paid: 0 };
@@ -269,7 +268,7 @@
     });
     $('#tbody').innerHTML = rows.map(function (b, i) {
       var pk = payKey(b);
-      return '<tr tabindex="0" data-code="' + b.code + '" style="animation-delay:' + (i * 40) + 'ms">' +
+      return '<tr tabindex="0" data-code="' + b.code + '">' +
         '<td><span class="who"><i>' + initials(b.name) + '</i><b style="font-weight:500">' + esc(b.name) + '</b></span></td>' +
         '<td class="mono">' + b.code + '</td>' +
         '<td>' + fmtDate(b.date) + '</td>' +
@@ -278,6 +277,11 @@
         '<td><span class="badge badge-' + pk + '">' + PAY[pk] + '</span></td>' +
         '<td class="num"><span class="row-go" aria-hidden="true">→</span></td></tr>';
     }).join('') || '<tr><td colspan="7" class="empty">Tidak ada booking yang cocok.</td></tr>';
+    // Baris baru memudar masuk bertahap (animasi diulang tiap ganti tab)
+    var table = $('#tbody').closest('table');
+    table.classList.toggle('is-fresh', false);
+    void table.offsetWidth;
+    table.classList.add('is-fresh');
   }
   $$('button', tabs).forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -344,16 +348,14 @@
     f.submit();
   });
 
-  /* ---------- Unduh rekap (CSV) ---------- */
-  $('#exportBtn').addEventListener('click', function () {
-    var rows = [['Tanggal', 'Pendapatan']];
-    (data.daily[ym(Y, M)] || []).forEach(function (v, i) { rows.push([ym(Y, M) + '-' + (i < 9 ? '0' : '') + (i + 1), v]); });
-    var csv = rows.map(function (r) { return r.join(','); }).join('\n');
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-    a.download = 'rekap-pendapatan-' + ym(Y, M) + '.csv';
-    document.body.appendChild(a); a.click(); a.remove();
-    F.toast('Rekap ' + MONTHS[M] + ' ' + Y + ' diunduh (CSV).');
+  /* ---------- Unduh rekap (PDF) ----------
+     Mengikuti periode yang sedang dilihat di grafik: mode Harian = rekap sebulan (?periode=YYYY-MM),
+     mode Bulanan = rekap setahun (?periode=YYYY). PDF dibuat server (Admin\RecapController). */
+  var exportBtn = $('#exportBtn');
+  exportBtn.addEventListener('click', function () {
+    var periode = mode === 'daily' ? ym(per.y, per.m) : String(per.y);
+    exportBtn.href = exportBtn.getAttribute('data-url') + '?periode=' + periode;
+    F.toast('Menyiapkan PDF rekap ' + (mode === 'daily' ? MONTHS[per.m] + ' ' + per.y : 'tahun ' + per.y) + '…');
   });
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }

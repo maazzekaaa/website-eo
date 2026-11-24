@@ -43,3 +43,13 @@ if (! function_exists('terbilang')) {
         };
     }
 }
+
+if (! function_exists('asset_v')) {
+    /** URL aset + ?v=<waktu ubah berkas>, agar peramban langsung memuat CSS/JS terbaru setelah diedit. */
+    function asset_v(string $path): string
+    {
+        $file = public_path($path);
+
+        return asset($path).(is_file($file) ? '?v='.filemtime($file) : '');
+    }
+}
