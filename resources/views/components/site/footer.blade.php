@@ -36,6 +36,6 @@
     @endunless
     {{-- Wordmark besar selebar kontainer: ukuran huruf mengikuti lebar (cqw), huruf rapat --}}
     <div class="footer-mark" aria-hidden="true"><span>FZM</span> <span>PRODUCTION</span></div>
-    <div class="footer-bottom"><span class="meta">© <span data-year>{{ date('Y') }}</span> {{ setting('company_name') }}</span><span class="meta">Event organizer </div>
+    <div class="footer-bottom"><span class="meta">© <span data-year>{{ date('Y') }}</span> {{ setting('company_name') }}</span><span class="meta">Event organizer</span></div>
   </div>
 </footer>
