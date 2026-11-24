@@ -65,6 +65,11 @@ return [
     |
     */
 
+    /*
+    | IP yang boleh membuka panel admin (dipisah koma). Kosong = semua IP (tetap wajib login).
+    */
+    'admin_allowed_ips' => env('ADMIN_ALLOWED_IPS', ''),
+
     'timezone' => 'Asia/Jakarta',
 
     /*

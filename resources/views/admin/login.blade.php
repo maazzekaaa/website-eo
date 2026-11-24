@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <x-favicon />
   <meta name="robots" content="noindex">
   <title>Masuk — FZM Admin</title>
   <meta name="theme-color" content="#101010">
@@ -33,14 +34,16 @@
 
         <div class="field">
           <label for="email">Email</label>
-          <input class="input" id="email" name="email" type="email" autocomplete="username" placeholder="admin@fzm.id" value="{{ old('email') }}" required>
+          <input class="input" id="email" name="email" type="email" autocomplete="username" placeholder="nama@email.com" value="{{ old('email') }}" required>
         </div>
         <div class="field">
           <label for="password">Kata sandi</label>
           <div class="pw-wrap">
             <input class="input" id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
             <button class="pw-toggle" type="button" id="pwToggle" aria-label="Tampilkan kata sandi" aria-pressed="false">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              {{-- Mata tertutup saat sandi disembunyikan, mata terbuka saat sandi ditampilkan --}}
+              <svg class="pw-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-2.6 3.5M6.6 6.6C3.7 8.4 2 12 2 12s3.5 7 10 7c1.9 0 3.6-.6 5-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M3 3l18 18"/></svg>
+              <svg class="pw-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
         </div>

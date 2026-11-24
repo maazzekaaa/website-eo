@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <x-favicon />
   <meta name="robots" content="noindex">
   <title>@yield('title', 'Dashboard') — FZM Admin</title>
   <meta name="theme-color" content="#FAFAFA">

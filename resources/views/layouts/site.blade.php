@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <x-favicon />
   <title>@yield('title', 'FZM Production Mediatama — Event Organizer &amp; Produksi Panggung')</title>
   <meta name="description" content="@yield('description', 'Event organizer dan produksi panggung untuk pernikahan dan acara korporat: sound, lighting, videotron, rigging, dan siaran langsung. Cek jadwal dan pesan online dalam hitungan menit.')">
   <meta property="og:title" content="@yield('title', 'FZM Production Mediatama')">

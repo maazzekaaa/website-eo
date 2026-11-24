@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <x-favicon />
   <title>Berkas terlalu besar — FZM Production</title>
   <link rel="stylesheet" href="{{ asset_v('assets/css/base.css') }}">
 </head>

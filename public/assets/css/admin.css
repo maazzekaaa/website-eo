@@ -30,6 +30,8 @@ body.admin-body { background: var(--bg); font-size: 16px; }
 .pw-wrap .input { padding-right: 52px; }
 .pw-toggle { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border: 0; background: none; border-radius: 10px; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 .pw-toggle:hover { color: var(--ink); background: var(--paper-2); }
+.pw-toggle .pw-eye, .pw-toggle[aria-pressed="true"] .pw-eye-off { display: none; }
+.pw-toggle[aria-pressed="true"] .pw-eye { display: block; }
 .auth-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 15px; }
 .check { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; min-height: 44px; }
 .check input { appearance: none; width: 20px; height: 20px; margin: 0; border-radius: 6px; border: 1.5px solid var(--line-3); background: var(--surface); cursor: pointer; display: grid; place-content: center; }

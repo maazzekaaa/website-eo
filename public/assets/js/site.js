@@ -61,11 +61,15 @@
   function revealUpdate() {
     revealQueued = false;
     var vh = window.innerHeight, span = vh * 0.32;          // jarak gulir dari mulai muncul → tampil penuh
+    // Sisa jarak gulir sampai dasar halaman. Elemen di dekat dasar (mis. hak cipta di footer)
+    // tidak bisa naik cukup tinggi, jadi titik mulainya digeser agar tetap tampil penuh di dasar.
+    var remaining = Math.max(0, document.documentElement.scrollHeight - vh - window.scrollY);
     for (var k = 0; k < revealEls.length; k++) {
       var el = revealEls[k];
       var top = el.getBoundingClientRect().top;
       var d = parseFloat(el.style.getPropertyValue('--d')) || 0;
       var start = vh - d * vh * 0.035;                      // anak berikutnya mulai sedikit lebih akhir
+      start = Math.max(start, top - remaining + span);      // posisi di dasar halaman = tampil penuh
       var p = Math.round(Math.min(1, Math.max(0, (start - top) / span)) * 1000) / 1000;
       if (el._p !== p) {
         el._p = p;

@@ -43,7 +43,7 @@ Route::get('/pesan', [BookingController::class, 'create'])->name('pesan.create')
 Route::post('/pesan', [BookingController::class, 'store'])->middleware('throttle:10,1')->name('pesan.store');
 Route::get('/pesan/sukses/{code}', [BookingController::class, 'success'])->name('pesan.success');
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware('admin.protect')->group(function () {
     Route::middleware('guest:admin')->group(function () {
         Route::get('/login', [AuthController::class, 'show'])->name('login');
         Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');

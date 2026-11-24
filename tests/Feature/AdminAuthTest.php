@@ -86,4 +86,35 @@ class AdminAuthTest extends TestCase
         $this->assertNotSame('admin123', $admin->password);
         $this->assertTrue(Hash::check('admin123', $admin->password));
     }
+
+    public function test_halaman_admin_tidak_diindeks_dan_tidak_dicache(): void
+    {
+        $this->get('/admin/login')->assertOk()
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow')
+            ->assertHeader('X-Frame-Options', 'DENY')
+            ->assertHeader('Cache-Control', 'no-store, private');
+
+        $this->get('/')->assertHeader('X-Frame-Options', 'SAMEORIGIN')->assertHeader('X-Content-Type-Options', 'nosniff');
+    }
+
+    public function test_daftar_ip_admin_menolak_ip_lain(): void
+    {
+        config(['app.admin_allowed_ips' => '10.0.0.5, 10.0.0.6']);
+
+        $this->get('/admin/login')->assertNotFound();
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.6'])->get('/admin/login')->assertOk();
+        $this->get('/')->assertOk();                                   // situs publik tetap terbuka
+    }
+
+    public function test_login_tanpa_token_csrf_ditolak(): void
+    {
+        $this->app['env'] = 'local';                                    // aktifkan cek CSRF (dimatikan saat unit test)
+        $this->post('/admin/login', ['email' => 'admin@fzm.id', 'password' => 'admin123'])->assertStatus(419);
+        $this->assertGuest('admin');
+    }
+
+    public function test_login_tidak_menampilkan_email_admin(): void
+    {
+        $this->get('/admin/login')->assertDontSee('admin@fzm.id')->assertSee('placeholder="nama@email.com"', false);
+    }
 }

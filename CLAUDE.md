@@ -57,6 +57,11 @@ Panduan lengkap: `docs/DESIGN.md` (kanvas: https://claude.ai/artifact/Tbtxyek7Ag
 - Animasi: perpindahan halaman publik lewat View Transitions (lama memudar+buram, baru naik; fallback di `site.js`); pil hitam navbar meluncur ke menu tujuan sebelum pindah; konten muncul bertingkat saat di-scroll (`data-reveal` + `--d`); pudar singkat `data-reveal`; UX ala Apple/iOS: kurva pegas (`--spring`), tombol mengecil saat ditekan, sorotan meluncur di navbar. Admin: jempol hitam meluncur ke menu aktif, filter status kontrol segmen, sakelar iOS untuk centang, dialog/laci berlatar buram. Selalu hormati `prefers-reduced-motion`.
 - Aksesibilitas: target sentuh ≥ 44px, label form, fokus 3px merah, kontras teks ≥ 4.5:1.
 
+## Keamanan & perangkat
+- Admin: wajib login (`auth:admin`), CSRF di semua form, batas 5 percobaan login/menit, middleware `ProtectAdmin` (noindex, no-store, tanpa iframe; opsional `ADMIN_ALLOWED_IPS` di `.env` → IP lain dapat 404). `SecurityHeaders` untuk semua halaman.
+- Ikon tab: `<x-favicon />` (`public/favicon.ico|svg`, `apple-touch-icon.png`, `site.webmanifest`).
+- Responsif lewat media query; wajib tanpa geser samping di 320–1024px (pakai `minmax(0, 1fr)` untuk kolom grid).
+
 ## Konvensi kode frontend
 - JS vanilla dalam IIFE, tanpa dependensi. Data dari server diletakkan di blok `<script type="application/json">` (`dashData`, `bookingData`) atau `window.FZM_CONFIG` dengan `@json`.
 - `admin.js` adalah shell bersama (penjaga login, sidebar, dropdown, toast, `window.FZM`); muat sebelum skrip halaman admin.
